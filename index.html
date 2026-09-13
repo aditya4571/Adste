@@ -1,0 +1,881 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Aditya ADSTE</title>
+<meta name="description" content="Aditya's S&T field register — staff, assets, ready reckoners, tasks and inspection scheduling.">
+<meta name="theme-color" content="#1f5c8b">
+
+<!-- iOS: run as a standalone app when added to the Home Screen -->
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="ADSTE">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+
+<!-- Android / other -->
+<meta name="mobile-web-app-capable" content="yes">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#f2f4f3; --surface:#ffffff; --surface-2:#e9ece9; --ink:#16212b; --ink-soft:#4b5a63;
+    --muted:#6f7f87; --border:#d7dee0; --accent:#1f5c8b; --accent-ink:#ffffff;
+    --ok:#2e7d4f; --ok-bg:#e4f3ea; --warn:#a8710f; --warn-bg:#faf1de; --danger:#b3261e; --danger-bg:#fbe6e4;
+    --chip-bg:#e7ebe9; --shadow: 0 1px 2px rgba(22,33,43,.06), 0 4px 14px rgba(22,33,43,.05);
+    --brass:#8a6d34; --brass-soft:#c9b482; --lamp-off:#d7dcd6; --lamp-off-ink:#8a9490; --plate:#1c2a22;
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --bg:#10161b; --surface:#17212a; --surface-2:#1e2830; --ink:#e8edf0; --ink-soft:#b7c2c8;
+      --muted:#8797a0; --border:#2a3640; --accent:#5fa8de; --accent-ink:#06222f;
+      --ok:#5fbf85; --ok-bg:#163325; --warn:#d9a441; --warn-bg:#362a10; --danger:#e5726b; --danger-bg:#3a1917;
+      --chip-bg:#232f38; --shadow: 0 1px 2px rgba(0,0,0,.3), 0 6px 20px rgba(0,0,0,.35);
+      --brass:#c7a55a; --brass-soft:#4a3f22; --lamp-off:#25302b; --lamp-off-ink:#5c6b62; --plate:#0b1310;
+    }
+  }
+  :root[data-theme="dark"]{
+    --bg:#10161b; --surface:#17212a; --surface-2:#1e2830; --ink:#e8edf0; --ink-soft:#b7c2c8;
+    --muted:#8797a0; --border:#2a3640; --accent:#5fa8de; --accent-ink:#06222f;
+    --ok:#5fbf85; --ok-bg:#163325; --warn:#d9a441; --warn-bg:#362a10; --danger:#e5726b; --danger-bg:#3a1917;
+    --chip-bg:#232f38; --shadow: 0 1px 2px rgba(0,0,0,.3), 0 6px 20px rgba(0,0,0,.35);
+    --brass:#c7a55a; --brass-soft:#4a3f22; --lamp-off:#25302b; --lamp-off-ink:#5c6b62; --plate:#0b1310;
+  }
+  *{box-sizing:border-box;}
+  html,body{ background:var(--bg); }
+  body{
+    margin:0; background:var(--bg); color:var(--ink);
+    font-family:"IBM Plex Sans", system-ui, -apple-system, sans-serif;
+    -webkit-font-smoothing:antialiased;
+  }
+  .mono{ font-family:"IBM Plex Mono", ui-monospace, monospace; font-variant-numeric:tabular-nums; }
+  button, input, select, textarea{ font-family:inherit; font-size:1rem; color:inherit; }
+  button{ cursor:pointer; }
+  a{ color:var(--accent); }
+
+  #app{ max-width:720px; margin:0 auto; padding:0 16px 92px; min-height:100vh; }
+
+  header.top{
+    position:sticky; top:0; z-index:5; background:var(--bg);
+    padding-block:calc(14px + env(safe-area-inset-top)) 8px; padding-top:calc(14px + env(safe-area-inset-top));
+    border-bottom:1px solid var(--border);
+    display:flex; align-items:baseline; justify-content:space-between; gap:8px;
+  }
+  header.top .brand{ display:flex; flex-direction:column; gap:5px; }
+  header.top .brand .name{
+    font-family:"IBM Plex Mono", monospace; font-weight:600; font-size:.86rem;
+    letter-spacing:.13em; text-transform:uppercase; color:var(--plate);
+    background:linear-gradient(180deg, var(--brass-soft), var(--brass));
+    padding:5px 10px; border-radius:3px; display:inline-block; width:fit-content;
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.35), inset 0 -1px 2px rgba(0,0,0,.25);
+  }
+  header.top .brand .sub{ font-size:.78rem; color:var(--muted); }
+  header.top .status-pill{ display:flex; align-items:center; gap:7px; font-size:.72rem; color:var(--muted); }
+  .signal-head{ display:flex; flex-direction:column; gap:2px; background:var(--plate); padding:4px 3px; border-radius:4px; flex:none; }
+  .signal-head .lamp{ width:7px; height:7px; border-radius:50%; background:var(--lamp-off); display:block; }
+  .signal-head .lamp.lit-danger{ background:var(--danger); box-shadow:0 0 4px 1px var(--danger); }
+  .signal-head .lamp.lit-warn{ background:var(--warn); box-shadow:0 0 4px 1px var(--warn); }
+  .signal-head .lamp.lit-ok{ background:var(--ok); box-shadow:0 0 4px 1px var(--ok); }
+
+  main{ padding-top:14px; }
+  h1.page-title{ font-size:1.3rem; margin:0 0 2px; text-wrap:balance; }
+  .page-sub{ color:var(--muted); font-size:.85rem; margin:0 0 16px; }
+
+  /* Dashboard: indication board */
+  .board{ border:1px solid var(--border); border-radius:8px; overflow:hidden; margin-bottom:20px; background:var(--surface); }
+  .board-row{ display:flex; align-items:center; gap:11px; padding:12px 14px; border-bottom:1px solid var(--border); }
+  .board-row:last-child{ border-bottom:none; }
+  .board-row .lamp{ width:9px; height:9px; border-radius:50%; background:var(--lamp-off); flex:none; box-shadow:inset 0 0 0 1px var(--lamp-off-ink); }
+  .board-row.lit-danger .lamp{ background:var(--danger); box-shadow:0 0 5px 1px var(--danger); }
+  .board-row.lit-warn .lamp{ background:var(--warn); box-shadow:0 0 5px 1px var(--warn); }
+  .board-row.lit-ok .lamp{ background:var(--ok); box-shadow:0 0 5px 1px var(--ok); }
+  .board-row .l{ flex:1; font-size:.87rem; color:var(--ink-soft); min-width:0; }
+  .board-row .n{ font-family:"IBM Plex Mono",monospace; font-weight:600; font-size:1.05rem; flex:none; }
+  .board-row.lit-danger .n{ color:var(--danger); }
+  .board-row.lit-warn .n{ color:var(--warn); }
+
+  .section-label{ font-size:.85rem; font-weight:600; color:var(--ink-soft); margin:22px 0 8px; padding-top:15px; border-top:1px solid var(--border); }
+  .section-label:first-child{ margin-top:0; padding-top:0; border-top:none; }
+
+  .attn-list{ display:flex; flex-direction:column; border-top:1px solid var(--border); }
+  .attn-item{
+    display:flex; align-items:center; gap:10px; padding:10px 6px 10px 13px;
+    border-bottom:1px solid var(--border); border-left:3px solid transparent;
+  }
+  .attn-item.danger{ border-left-color:var(--danger); }
+  .attn-item.warn{ border-left-color:var(--warn); }
+  .attn-item .body{ flex:1; min-width:0; }
+  .attn-item .t{ font-weight:500; font-size:.92rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .attn-item .d{ font-size:.76rem; color:var(--muted); }
+  .empty-note{ color:var(--muted); font-size:.88rem; padding:10px 2px; }
+
+  /* Backup panel */
+  .backup-actions{ display:flex; gap:8px; flex-wrap:wrap; margin-top:10px; }
+
+  /* Search / filter bar */
+  .searchbar{ display:flex; gap:8px; flex-wrap:wrap; margin-bottom:10px; }
+  .searchbar input[type=text]{ flex:1 1 180px; min-width:140px; }
+  .searchbar select{ flex:0 1 160px; background:var(--surface); border:1px solid var(--border); border-radius:8px; padding:9px 8px; }
+
+  /* Toolbar */
+  .toolbar{ display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:12px; flex-wrap:wrap; }
+  .chips{ display:flex; gap:6px; flex-wrap:wrap; }
+  .chip{
+    border:1px solid var(--border); background:var(--surface); color:var(--ink-soft);
+    padding:5px 11px; border-radius:999px; font-size:.78rem; white-space:nowrap;
+  }
+  .chip.active{ background:var(--accent); border-color:var(--accent); color:var(--accent-ink); }
+  .btn{
+    border:1px solid var(--border); background:var(--surface); color:var(--ink);
+    padding:9px 14px; border-radius:9px; font-size:.88rem; font-weight:500;
+    display:inline-flex; align-items:center; gap:6px;
+  }
+  .btn:focus-visible, .chip:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible, .navbtn:focus-visible{
+    outline:2px solid var(--accent); outline-offset:2px;
+  }
+  .btn.primary{ background:var(--accent); border-color:var(--accent); color:var(--accent-ink); }
+  .btn.ghost{ background:transparent; }
+  .btn.small{ padding:6px 10px; font-size:.78rem; }
+  .btn svg{ width:15px; height:15px; }
+
+  /* Record ledger */
+  .cards{ border:1px solid var(--border); border-radius:8px; overflow:hidden; background:var(--surface); }
+  .card{
+    padding:13px 14px; display:flex; flex-direction:column; gap:8px;
+    border-bottom:1px solid var(--border); border-left:3px solid transparent;
+  }
+  .card:last-child{ border-bottom:none; }
+  .card.accent-danger{ border-left-color:var(--danger); }
+  .card.accent-warn{ border-left-color:var(--warn); }
+  .card .row1{ display:flex; align-items:flex-start; justify-content:space-between; gap:10px; }
+  .card .title{ font-weight:600; font-size:.98rem; text-wrap:balance; }
+  .card .meta{ font-size:.8rem; color:var(--muted); display:flex; flex-wrap:wrap; gap:4px 10px; }
+  .card .meta span{ display:inline-flex; align-items:center; gap:4px; }
+  .card .desc{ font-size:.85rem; color:var(--ink-soft); white-space:pre-wrap; }
+  .badge{ font-size:.72rem; font-weight:600; padding:3px 8px; border-radius:4px; white-space:nowrap; letter-spacing:.02em; }
+  .badge.ok{ background:var(--ok-bg); color:var(--ok); }
+  .badge.warn{ background:var(--warn-bg); color:var(--warn); }
+  .badge.danger{ background:var(--danger-bg); color:var(--danger); }
+  .badge.neutral{ background:var(--chip-bg); color:var(--ink-soft); }
+  .card .actions{ display:flex; gap:8px; justify-content:flex-end; padding-top:2px; }
+  .iconbtn{
+    background:transparent; border:1px solid var(--border); border-radius:6px; padding:7px 10px;
+    color:var(--ink-soft); font-size:.78rem; display:inline-flex; align-items:center; gap:5px;
+  }
+  .iconbtn svg{ width:14px; height:14px; }
+  .iconbtn.confirm{ background:var(--danger-bg); border-color:var(--danger); color:var(--danger); font-weight:600; }
+
+  /* Modal / sheet */
+  dialog{
+    border:none; border-radius:16px 16px 0 0; padding:0; width:100%; max-width:560px;
+    margin:auto auto 0; background:var(--surface); color:var(--ink); box-shadow:var(--shadow);
+    max-height:88vh;
+  }
+  @media (min-width:600px){ dialog{ border-radius:16px; margin:auto; } }
+  dialog::backdrop{ background:rgba(10,15,19,.45); }
+  .sheet-head{ display:flex; align-items:center; justify-content:space-between; padding:16px 18px; border-bottom:1px solid var(--border); }
+  .sheet-head h2{ margin:0; font-size:1.05rem; }
+  .sheet-body{ padding:16px 18px; overflow-y:auto; max-height:calc(88vh - 128px); display:flex; flex-direction:column; gap:13px; }
+  .sheet-foot{ padding:14px 18px; border-top:1px solid var(--border); display:flex; justify-content:flex-end; gap:10px; }
+  .field{ display:flex; flex-direction:column; gap:5px; }
+  .field label{ font-size:.78rem; color:var(--muted); font-weight:500; }
+  .field .req{ color:var(--danger); }
+  input[type=text], input[type=date], input[type=tel], select, textarea{
+    background:var(--bg); border:1px solid var(--border); border-radius:8px; padding:9px 10px; width:100%;
+  }
+  textarea{ resize:vertical; min-height:64px; font-family:inherit; }
+  .closex{ background:none; border:none; color:var(--muted); font-size:1.3rem; line-height:1; padding:4px; }
+
+  /* Bottom nav */
+  nav.tabs{
+    position:fixed; left:0; right:0; bottom:0; z-index:10;
+    background:var(--surface); border-top:1px solid var(--border);
+    display:flex; justify-content:space-around; padding:6px max(6px, env(safe-area-inset-left)) calc(6px + env(safe-area-inset-bottom));
+  }
+  .navbtn{
+    background:none; border:none; color:var(--muted); display:flex; flex-direction:column; align-items:center;
+    gap:2px; padding:6px 4px; border-radius:10px; font-size:.64rem; flex:1; min-width:0; letter-spacing:.01em;
+  }
+  .navbtn svg{ width:20px; height:20px; }
+  .navbtn.active{ color:var(--accent); }
+
+  .center-note{ text-align:center; color:var(--muted); padding:60px 20px; font-size:.9rem; }
+  [hidden]{ display:none !important; }
+</style>
+</head>
+<body>
+
+<div id="app">
+  <header class="top">
+    <div class="brand">
+      <span class="name">Aditya ADSTE</span>
+      <span class="sub">S&amp;T field register</span>
+    </div>
+    <span class="status-pill" id="connStatus">
+      <span class="signal-head" id="connSignal">
+        <span class="lamp" data-aspect="danger"></span>
+        <span class="lamp" data-aspect="warn"></span>
+        <span class="lamp" data-aspect="ok"></span>
+      </span>
+      <span id="connLabel">Starting</span>
+    </span>
+  </header>
+  <main id="main"></main>
+</div>
+
+<dialog id="sheet">
+  <form method="dialog" id="sheetForm">
+    <div class="sheet-head">
+      <h2 id="sheetTitle">Add record</h2>
+      <button type="button" class="closex" id="sheetClose" aria-label="Close">&times;</button>
+    </div>
+    <div class="sheet-body" id="sheetBody"></div>
+    <div class="sheet-foot">
+      <button type="button" class="btn ghost" id="sheetCancel">Cancel</button>
+      <button type="submit" class="btn primary" id="sheetSave">Save</button>
+    </div>
+  </form>
+</dialog>
+
+<nav class="tabs" id="tabs"></nav>
+
+<script>
+(function(){
+"use strict";
+
+/* ---------- icons ---------- */
+const ICONS = {
+  dashboard:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="8" height="8" rx="1.5"/><rect x="13" y="3" width="8" height="5" rx="1.5"/><rect x="13" y="12" width="8" height="9" rx="1.5"/><rect x="3" y="14" width="8" height="7" rx="1.5"/></svg>',
+  staff:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="8" r="3.6"/><path d="M4.5 20c1.2-4 4-6 7.5-6s6.3 2 7.5 6"/></svg>',
+  assets:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M14.7 6.3a3 3 0 0 0-4.24 4.24l-6.36 6.36a1.5 1.5 0 0 0 2.12 2.12l6.36-6.36a3 3 0 0 0 4.24-4.24l-2.4 2.4-2-2z"/></svg>',
+  reckoner:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M5 4.5A1.5 1.5 0 0 1 6.5 3H18a1 1 0 0 1 1 1v15.5a1 1 0 0 1-1 1H6.5A1.5 1.5 0 0 1 5 19V4.5z"/><path d="M8 3v17"/></svg>',
+  tasks:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M9 11.5 11 13.5 15.5 9"/><rect x="3.5" y="3.5" width="17" height="17" rx="3"/></svg>',
+  inspections:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3.5" y="5" width="17" height="15.5" rx="2"/><path d="M3.5 9.5h17M8 3v4M16 3v4"/><path d="M8 14h2M14 14h2M8 17h2"/></svg>',
+  plus:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg>',
+  edit:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 20h4L18.5 9.5a2.1 2.1 0 0 0-3-3L5 17v3z"/></svg>',
+  trash:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 7h16M9 7V4.8A1.8 1.8 0 0 1 10.8 3h2.4A1.8 1.8 0 0 1 15 4.8V7m2 0-.7 12.4A2 2 0 0 1 14.3 21H9.7a2 2 0 0 1-2-1.6L7 7"/></svg>',
+  check:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4.5 12.5 9 17l10.5-10.5"/></svg>',
+  download:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 3v13M7 11l5 5 5-5M5 21h14"/></svg>',
+  upload:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 21V8M7 12l5-5 5 5M5 3h14"/></svg>',
+};
+
+/* ---------- config: five modules ---------- */
+const MODULES = {
+  dashboard:{ label:"Home", icon:"dashboard" },
+  staff:{
+    label:"Staff", icon:"staff", title:"Staff", singular:"staff member",
+    fields:[
+      {key:"name", label:"Name", type:"text", required:true},
+      {key:"designation", label:"Designation", type:"text", placeholder:"e.g. JE/S/VKT, Tech-I/GDR, SSE"},
+      {key:"jurisdiction", label:"Head quarters / section", type:"text", placeholder:"e.g. GDR, VKT, NLR"},
+      {key:"station", label:"Station / duty notes", type:"text"},
+      {key:"phone", label:"Phone", type:"tel"},
+      {key:"pfNumber", label:"PF number", type:"text"},
+      {key:"hrms", label:"HRMS ID", type:"text"},
+      {key:"rcDone", label:"Refresher course – done", type:"text"},
+      {key:"rcDue", label:"Refresher course – due", type:"text"},
+      {key:"dob", label:"Date of birth", type:"text"},
+      {key:"doa", label:"Date of appointment", type:"text"},
+      {key:"workingFrom", label:"Working from (current post)", type:"text"},
+      {key:"remarks", label:"Remarks", type:"textarea"},
+    ],
+    cardTitle:r=>r.name||"Untitled",
+    cardMeta:r=>[r.designation, r.jurisdiction, r.pfNumber?("PF "+r.pfNumber):null, r.phone].filter(Boolean),
+    searchFields:["name","designation","jurisdiction","station","phone","pfNumber","hrms","remarks"],
+    filterFields:[{key:"jurisdiction", label:"Section / HQ"}],
+  },
+  assets:{
+    label:"Assets", icon:"assets", title:"Signalling & Telecom Assets", singular:"asset",
+    fields:[
+      {key:"category", label:"Category", type:"text", required:true, placeholder:"e.g. Block Instrument, IPS, EI Station, Station, MSDAC/HASSDAC/SSDAC, NI LC Gate, ELD, AWS, SSBPAC-D…"},
+      {key:"identifier", label:"Identifier / S.No.", type:"text", placeholder:"Serial no., LC no., station code…"},
+      {key:"station", label:"Station", type:"text"},
+      {key:"section", label:"Section / block section", type:"text"},
+      {key:"subtype", label:"Type / details", type:"text", placeholder:"e.g. MAJOR IPS, Route A"},
+      {key:"make", label:"Make", type:"text"},
+      {key:"doi", label:"DOI / installed", type:"text"},
+      {key:"due", label:"Due / POH due", type:"text"},
+      {key:"remarks", label:"Remarks", type:"textarea"},
+    ],
+    cardTitle:r=>[r.category, r.identifier||r.station].filter(Boolean).join(" — ")||"Untitled",
+    cardMeta:r=>[r.station, r.section, r.subtype, r.make].filter(Boolean),
+    searchFields:["category","identifier","station","section","subtype","make","doi","due","remarks"],
+    filterFields:[{key:"category", label:"Category"},{key:"make", label:"Make"}],
+  },
+  reckoner:{
+    label:"Reckoner", icon:"reckoner", title:"Ready Reckoners", singular:"reckoner",
+    fields:[
+      {key:"title", label:"Title", type:"text", required:true, placeholder:"e.g. Point Machine – setting tolerances"},
+      {key:"category", label:"Category", type:"text", placeholder:"e.g. Signal, Telecom, LC Gate"},
+      {key:"content", label:"Quick-reference notes", type:"textarea", required:true, rows:8},
+    ],
+    cardTitle:r=>r.title||"Untitled",
+    cardMeta:r=>[r.category].filter(Boolean),
+    searchFields:["title","category","content"],
+    filterFields:[{key:"category", label:"Category"}],
+  },
+  tasks:{
+    label:"Tasks", icon:"tasks", title:"Tasks", singular:"task",
+    fields:[
+      {key:"title", label:"Task", type:"text", required:true},
+      {key:"description", label:"Description", type:"textarea"},
+      {key:"priority", label:"Priority", type:"select", options:["Low","Medium","High"], default:"Medium"},
+      {key:"dueDate", label:"Due date", type:"date"},
+      {key:"status", label:"Status", type:"select", options:["Pending","In Progress","Done"], default:"Pending"},
+    ],
+    cardTitle:r=>r.title||"Untitled",
+    cardMeta:r=>[r.dueDate?("Due "+fmtDate(r.dueDate)):null].filter(Boolean),
+    statusBadge:r=>({Pending:"neutral","In Progress":"warn",Done:"ok"}[r.status]||"neutral"),
+    priorityBadge:r=>({High:"danger",Medium:"warn",Low:"neutral"}[r.priority]||"neutral"),
+    searchFields:["title","description"],
+  },
+  inspections:{
+    label:"Inspect", icon:"inspections", title:"Inspection Scheduler", singular:"inspection",
+    fields:[
+      {key:"title", label:"Title", type:"text", required:true, placeholder:"e.g. Annual Station Inspection – Gudivada"},
+      {key:"type", label:"Type", type:"select", options:["Station","LC Gate","IBS Hut","ABS Hut","EC Socket","Point Machine","Other"]},
+      {key:"location", label:"Location", type:"text"},
+      {key:"scheduledDate", label:"Scheduled / next due date", type:"date", required:true},
+      {key:"frequency", label:"Repeats", type:"select", options:["One-time","Monthly","Quarterly","Half-Yearly","Yearly"], default:"One-time"},
+      {key:"notes", label:"Notes", type:"textarea"},
+    ],
+    cardTitle:r=>r.title||"Untitled",
+    cardMeta:r=>[r.type, r.location, r.frequency&&r.frequency!=="One-time"?r.frequency:null].filter(Boolean),
+    searchFields:["title","location","notes"],
+    filterFields:[{key:"type", label:"Type"}],
+  },
+};
+const TAB_ORDER = ["dashboard","staff","assets","reckoner","tasks","inspections"];
+
+/* ---------- date helpers ---------- */
+function todayISO(){ return new Date().toISOString().slice(0,10); }
+function fmtDate(iso){
+  if(!iso) return "";
+  const d = new Date(iso+"T00:00:00");
+  if(isNaN(d)) return iso;
+  return d.toLocaleDateString(undefined,{day:"numeric",month:"short",year:"numeric"});
+}
+function daysUntil(iso){
+  if(!iso) return null;
+  const d = new Date(iso+"T00:00:00"), t = new Date(todayISO()+"T00:00:00");
+  return Math.round((d-t)/86400000);
+}
+function addMonths(iso, months){
+  const d = new Date(iso+"T00:00:00");
+  d.setMonth(d.getMonth()+months);
+  return d.toISOString().slice(0,10);
+}
+const FREQ_MONTHS = {"Monthly":1,"Quarterly":3,"Half-Yearly":6,"Yearly":12};
+function genId(){ return "l"+Date.now().toString(36)+Math.random().toString(36).slice(2,9); }
+
+/* ---------- on-device database ----------
+   Mimics the small subset of the Firestore-style API this app uses
+   (collection().onSnapshot / .doc().update()/.delete() / .add()),
+   backed by localStorage — so the app works fully standalone, with
+   no server and no account, once it's hosted (e.g. on GitHub Pages)
+   or added to your Home Screen. */
+function LocalDB(storageKey){
+  this.key = storageKey;
+  this._data = this._load();
+  this._listeners = {};
+}
+LocalDB.prototype._load = function(){
+  try{
+    const raw = localStorage.getItem(this.key);
+    return raw ? JSON.parse(raw) : {};
+  }catch(e){ return {}; }
+};
+LocalDB.prototype._save = function(){
+  try{ localStorage.setItem(this.key, JSON.stringify(this._data)); }catch(e){ console.error("Could not save locally", e); }
+};
+LocalDB.prototype._emit = function(coll){
+  const arr = this._data[coll] || [];
+  const snap = { docs: arr.map(d=>({ id:d.id, data:function(){ const rest = Object.assign({}, d); delete rest.id; return rest; } })) };
+  (this._listeners[coll]||[]).forEach(cb=>cb(snap));
+};
+LocalDB.prototype.collection = function(name){
+  if(!this._data[name]) this._data[name] = [];
+  const self = this;
+  return {
+    onSnapshot: function(cb){
+      self._listeners[name] = self._listeners[name] || [];
+      self._listeners[name].push(cb);
+      self._emit(name);
+      return function(){ self._listeners[name] = self._listeners[name].filter(function(x){ return x!==cb; }); };
+    },
+    add: function(fields){
+      return new Promise(function(resolve){
+        const rec = Object.assign({ id: genId() }, fields);
+        self._data[name].push(rec);
+        self._save(); self._emit(name);
+        resolve({ id: rec.id });
+      });
+    },
+    doc: function(id){
+      return {
+        update: function(patch){
+          return new Promise(function(resolve){
+            const arr = self._data[name];
+            const idx = arr.findIndex(function(d){ return d.id===id; });
+            if(idx>-1) arr[idx] = Object.assign({}, arr[idx], patch);
+            self._save(); self._emit(name);
+            resolve();
+          });
+        },
+        delete: function(){
+          return new Promise(function(resolve){
+            self._data[name] = self._data[name].filter(function(d){ return d.id!==id; });
+            self._save(); self._emit(name);
+            resolve();
+          });
+        }
+      };
+    }
+  };
+};
+LocalDB.prototype.exportAll = function(moduleToCollection){
+  const out = {};
+  Object.keys(moduleToCollection).forEach(mod=>{ out[mod] = this._data[moduleToCollection[mod]] || []; });
+  return out;
+};
+LocalDB.prototype.importAll = function(payload, moduleToCollection){
+  const self = this;
+  Object.keys(moduleToCollection).forEach(function(mod){
+    const coll = moduleToCollection[mod];
+    const arr = payload[mod];
+    if(Array.isArray(arr)){
+      self._data[coll] = arr.map(function(r){
+        const rec = Object.assign({}, r);
+        if(!rec.id) rec.id = genId();
+        return rec;
+      });
+    }
+  });
+  self._save();
+  Object.keys(self._listeners).forEach(function(coll){ self._emit(coll); });
+};
+
+/* ---------- state ---------- */
+let db = null;
+let localMode = false;
+const data = { staff:[], assets:[], reckoner:[], tasks:[], inspections:[] };
+const COLLECTION_NAME = { staff:"staff", assets:"assets", reckoner:"reckoners", tasks:"tasks", inspections:"inspections" };
+let activeTab = "dashboard";
+let filters = { tasks:"open", inspections:"upcoming" };
+let searchState = {};    // mod -> search text
+let fieldFilterState = {}; // mod -> { fieldKey: value }
+let editing = null; // {mod, id} or null for new
+let confirmingDelete = null; // "mod:id"
+
+const mainEl = document.getElementById("main");
+const tabsEl = document.getElementById("tabs");
+const sheet = document.getElementById("sheet");
+const sheetForm = document.getElementById("sheetForm");
+const sheetBody = document.getElementById("sheetBody");
+const sheetTitle = document.getElementById("sheetTitle");
+
+/* ---------- nav ---------- */
+function renderTabs(){
+  tabsEl.innerHTML = TAB_ORDER.map(key=>{
+    const m = MODULES[key];
+    return `<button class="navbtn ${key===activeTab?'active':''}" data-tab="${key}">${ICONS[m.icon]}<span>${m.label}</span></button>`;
+  }).join("");
+  tabsEl.querySelectorAll(".navbtn").forEach(b=>b.addEventListener("click",()=>{ activeTab=b.dataset.tab; confirmingDelete=null; render(); }));
+}
+
+/* ---------- render dispatch ---------- */
+function render(){
+  renderTabs();
+  if(activeTab==="dashboard") renderDashboard();
+  else renderList(activeTab);
+}
+
+/* ---------- dashboard ---------- */
+function renderDashboard(){
+  const overdueInsp = data.inspections.filter(r=>daysUntil(r.scheduledDate)!==null && daysUntil(r.scheduledDate)<0);
+  const dueSoonInsp = data.inspections.filter(r=>{ const d=daysUntil(r.scheduledDate); return d!==null && d>=0 && d<=7; });
+  const openTasks = data.tasks.filter(r=>r.status!=="Done");
+  const overdueTasks = openTasks.filter(r=>r.dueDate && daysUntil(r.dueDate)<0);
+  const faultyAssets = data.assets.filter(r=>r.status==="Faulty");
+
+  const attn = [];
+  overdueInsp.forEach(r=>attn.push({sev:"danger", t:r.title, d:"Inspection overdue · was due "+fmtDate(r.scheduledDate)}));
+  faultyAssets.forEach(r=>attn.push({sev:"danger", t:r.name, d:"Asset marked Faulty"+(r.location?" · "+r.location:"")}));
+  overdueTasks.forEach(r=>attn.push({sev:"warn", t:r.title, d:"Task overdue · was due "+fmtDate(r.dueDate)}));
+  dueSoonInsp.forEach(r=>attn.push({sev:"warn", t:r.title, d:"Inspection due "+fmtDate(r.scheduledDate)}));
+
+  const rows = [
+    { lit:overdueInsp.length?"lit-danger":"", n:overdueInsp.length, l:"Inspections overdue" },
+    { lit:dueSoonInsp.length?"lit-warn":"", n:dueSoonInsp.length, l:"Due within 7 days" },
+    { lit:overdueTasks.length?"lit-warn":"", n:openTasks.length, l:"Open tasks" },
+    { lit:faultyAssets.length?"lit-danger":"", n:data.assets.length, l:"Assets on register" },
+    { lit:"", n:data.staff.length, l:"Staff on record" },
+    { lit:"", n:data.reckoner.length, l:"Ready reckoners" },
+  ];
+
+  mainEl.innerHTML = `
+    <h1 class="page-title">Overview</h1>
+    <p class="page-sub">${new Date().toLocaleDateString(undefined,{weekday:"long", day:"numeric", month:"long", year:"numeric"})}</p>
+    <div class="board">
+      ${rows.map(t=>`<div class="board-row ${t.lit}"><span class="lamp"></span><span class="l">${t.l}</span><span class="n">${t.n}</span></div>`).join("")}
+    </div>
+    <p class="section-label">Needs attention</p>
+    <div class="attn-list" id="attnList"></div>
+    <p class="section-label">Backup</p>
+    <div class="board">
+      <div class="board-row"><span class="lamp lit-ok"></span><span class="l">${localMode? "Data is stored on this device only" : "Data is synced to your Claude database"}</span></div>
+    </div>
+    <div class="backup-actions">
+      <button class="btn" id="exportBtn">${ICONS.download} Export backup</button>
+      <button class="btn" id="importBtn">${ICONS.upload} Import backup</button>
+      <input type="file" id="importFile" accept="application/json" hidden>
+    </div>
+  `;
+  const attnList = document.getElementById("attnList");
+  if(!attn.length){
+    attnList.innerHTML = `<p class="empty-note">Nothing overdue or due soon — the yard is clear.</p>`;
+  } else {
+    attnList.innerHTML = attn.map(a=>`
+      <div class="attn-item ${a.sev}">
+        <div class="body"><div class="t">${esc(a.t||"Untitled")}</div><div class="d">${esc(a.d)}</div></div>
+      </div>`).join("");
+  }
+  document.getElementById("exportBtn").addEventListener("click", exportData);
+  document.getElementById("importBtn").addEventListener("click", ()=>document.getElementById("importFile").click());
+  document.getElementById("importFile").addEventListener("change", (e)=>{
+    const f = e.target.files && e.target.files[0];
+    if(f) importData(f);
+    e.target.value = "";
+  });
+}
+
+/* ---------- backup: export / import ---------- */
+function exportData(){
+  const payload = {};
+  Object.keys(COLLECTION_NAME).forEach(mod=>{ payload[mod] = data[mod]; });
+  const blob = new Blob([JSON.stringify(payload, null, 2)], {type:"application/json"});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = "adste-backup-"+todayISO()+".json";
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  setTimeout(()=>URL.revokeObjectURL(url), 1000);
+}
+
+function importData(file){
+  const reader = new FileReader();
+  reader.onload = ()=>{
+    let obj;
+    try{ obj = JSON.parse(reader.result); }
+    catch(e){ alert("That file doesn't look like a valid backup (couldn't parse JSON)."); return; }
+    const hasKnownKey = Object.keys(COLLECTION_NAME).some(mod=>Array.isArray(obj[mod]));
+    if(!hasKnownKey){ alert("That file doesn't look like an ADSTE / Signal Yard backup."); return; }
+    if(!confirm("This will replace all data currently stored on this device with the contents of the backup file. Continue?")) return;
+    if(db && db.importAll){
+      db.importAll(obj, COLLECTION_NAME);
+    }
+  };
+  reader.readAsText(file);
+}
+
+/* ---------- list views ---------- */
+function passesFilter(mod, r){
+  if(mod==="tasks"){
+    if(filters.tasks==="open" && r.status==="Done") return false;
+    if(filters.tasks==="done" && r.status!=="Done") return false;
+  }
+  if(mod==="inspections"){
+    const d = daysUntil(r.scheduledDate);
+    if(filters.inspections==="overdue" && !(d!==null && d<0)) return false;
+    if(filters.inspections==="upcoming" && !(d===null || d>=0)) return false;
+  }
+  const cfg = MODULES[mod];
+  const q = (searchState[mod]||"").trim().toLowerCase();
+  if(q){
+    const fields = cfg.searchFields || Object.keys(r);
+    const hay = fields.map(f=>r[f]==null?"":String(r[f])).join(" ␟ ").toLowerCase();
+    if(!hay.includes(q)) return false;
+  }
+  const ff = fieldFilterState[mod];
+  if(ff){
+    for(const k in ff){
+      if(ff[k] && (r[k]||"") !== ff[k]) return false;
+    }
+  }
+  return true;
+}
+
+function distinctValues(mod, key){
+  const set = new Set();
+  data[mod].forEach(r=>{ if(r[key]) set.add(r[key]); });
+  return Array.from(set).sort((a,b)=>a.localeCompare(b));
+}
+
+function renderList(mod){
+  const cfg = MODULES[mod];
+  const rows = data[mod].filter(r=>passesFilter(mod,r)).slice().sort((a,b)=>sortKey(mod,a)-sortKey(mod,b));
+  const total = data[mod].length;
+
+  let chipsHtml = "";
+  if(mod==="tasks"){
+    chipsHtml = chipsRow("tasks", [["open","Open"],["done","Done"],["all","All"]]);
+  } else if(mod==="inspections"){
+    chipsHtml = chipsRow("inspections", [["upcoming","Upcoming"],["overdue","Overdue"],["all","All"]]);
+  }
+
+  const searchHtml = cfg.searchFields ? `<input type="text" id="searchBox" placeholder="Search ${cfg.title.toLowerCase()}…" value="${esc(searchState[mod]||"")}">` : "";
+  let filterSelectsHtml = "";
+  if(cfg.filterFields){
+    filterSelectsHtml = cfg.filterFields.map(ff=>{
+      const cur = (fieldFilterState[mod]||{})[ff.key] || "";
+      const opts = distinctValues(mod, ff.key);
+      return `<select data-fkey="${esc(ff.key)}" class="filtersel">
+        <option value="">${esc(ff.label)}: All</option>
+        ${opts.map(o=>`<option value="${esc(o)}" ${o===cur?'selected':''}>${esc(o)}</option>`).join("")}
+      </select>`;
+    }).join("");
+  }
+
+  mainEl.innerHTML = `
+    <h1 class="page-title">${cfg.title}</h1>
+    <p class="page-sub">${rows.length} of ${total} shown</p>
+    ${searchHtml || filterSelectsHtml ? `<div class="searchbar">${searchHtml}${filterSelectsHtml}</div>` : ""}
+    <div class="toolbar">
+      <div class="chips">${chipsHtml}</div>
+      <button class="btn primary" id="addBtn">${ICONS.plus} Add</button>
+    </div>
+    <div class="cards" id="cardsWrap"></div>
+  `;
+  document.getElementById("addBtn").addEventListener("click",()=>openSheet(mod,null));
+  mainEl.querySelectorAll(".chip[data-filter]").forEach(c=>c.addEventListener("click",()=>{
+    filters[mod]=c.dataset.filter; renderList(mod);
+  }));
+  const searchBox = document.getElementById("searchBox");
+  if(searchBox){
+    searchBox.addEventListener("input",()=>{ searchState[mod]=searchBox.value; renderListPreserveFocus(mod,"searchBox"); });
+  }
+  mainEl.querySelectorAll(".filtersel").forEach(sel=>{
+    sel.addEventListener("change",()=>{
+      fieldFilterState[mod] = fieldFilterState[mod] || {};
+      fieldFilterState[mod][sel.dataset.fkey] = sel.value;
+      renderList(mod);
+    });
+  });
+
+  const wrap = document.getElementById("cardsWrap");
+  if(!rows.length){
+    wrap.innerHTML = `<p class="empty-note">No ${cfg.singular} records match. Try clearing search/filters, or tap Add to create one.</p>`;
+    return;
+  }
+  wrap.innerHTML = rows.map(r=>cardHtml(mod,r)).join("");
+  wrap.querySelectorAll("[data-edit]").forEach(b=>b.addEventListener("click",()=>openSheet(mod,b.dataset.edit)));
+  wrap.querySelectorAll("[data-del]").forEach(b=>b.addEventListener("click",()=>handleDelete(mod,b.dataset.del,b)));
+  wrap.querySelectorAll("[data-complete]").forEach(b=>b.addEventListener("click",()=>completeInspection(b.dataset.complete)));
+}
+
+function renderListPreserveFocus(mod, inputId){
+  const el = document.getElementById(inputId);
+  const pos = el ? el.selectionStart : null;
+  renderList(mod);
+  const el2 = document.getElementById(inputId);
+  if(el2){ el2.focus(); if(pos!=null) el2.setSelectionRange(pos,pos); }
+}
+
+function chipsRow(mod, opts){
+  return opts.map(([val,label])=>`<button class="chip ${filters[mod]===val?'active':''}" data-filter="${val}">${label}</button>`).join("");
+}
+
+function sortKey(mod, r){
+  if(mod==="tasks") return r.dueDate ? new Date(r.dueDate).getTime() : Infinity;
+  if(mod==="inspections") return r.scheduledDate ? new Date(r.scheduledDate).getTime() : Infinity;
+  return (r.createdAt||0)*-1;
+}
+
+function cardHtml(mod, r){
+  const cfg = MODULES[mod];
+  const meta = cfg.cardMeta(r);
+  let badges = "";
+  if(mod==="assets" && r.category) badges += `<span class="badge neutral">${esc(r.category)}</span>`;
+  if(mod==="tasks"){
+    badges += `<span class="badge ${cfg.priorityBadge(r)}">${esc(r.priority||"Medium")}</span>`;
+    badges += `<span class="badge ${cfg.statusBadge(r)}">${esc(r.status||"Pending")}</span>`;
+  }
+  if(mod==="inspections"){
+    const d = daysUntil(r.scheduledDate);
+    if(d===null) badges += `<span class="badge neutral">Not scheduled</span>`;
+    else if(d<0) badges += `<span class="badge danger">Overdue ${Math.abs(d)}d</span>`;
+    else if(d<=7) badges += `<span class="badge warn">Due in ${d}d</span>`;
+    else badges += `<span class="badge ok">Scheduled</span>`;
+  }
+  const isConfirm = confirmingDelete === (mod+":"+r.id);
+  const desc = (mod==="reckoner" && r.content) ? r.content : (mod!=="reckoner" ? (r.remarks||r.description||r.notes||"") : "");
+
+  let extraAction = "";
+  if(mod==="inspections"){
+    extraAction = `<button class="iconbtn" data-complete="${r.id}">${ICONS.check} Mark completed</button>`;
+  }
+
+  let accentClass = "";
+  if(mod==="inspections"){
+    const d = daysUntil(r.scheduledDate);
+    if(d!==null && d<0) accentClass = "accent-danger";
+    else if(d!==null && d<=7) accentClass = "accent-warn";
+  } else if(mod==="tasks" && r.status!=="Done"){
+    if(r.dueDate && daysUntil(r.dueDate)<0) accentClass = "accent-danger";
+    else if(r.priority==="High") accentClass = "accent-warn";
+  }
+
+  return `
+    <div class="card ${accentClass}">
+      <div class="row1">
+        <div class="title">${esc(cfg.cardTitle(r))}</div>
+        <div style="display:flex; gap:6px; flex-wrap:wrap; justify-content:flex-end;">${badges}</div>
+      </div>
+      ${meta.length?`<div class="meta">${meta.map(m=>`<span class="mono">${esc(m)}</span>`).join("")}</div>`:""}
+      ${desc?`<div class="desc">${esc(desc)}</div>`:""}
+      ${mod==="inspections" && r.lastCompletedDate ? `<div class="meta"><span>Last done: ${fmtDate(r.lastCompletedDate)}</span></div>`:""}
+      <div class="actions">
+        ${extraAction}
+        <button class="iconbtn" data-edit="${r.id}">${ICONS.edit} Edit</button>
+        <button class="iconbtn ${isConfirm?'confirm':''}" data-del="${r.id}">${ICONS.trash} ${isConfirm?'Confirm delete':'Delete'}</button>
+      </div>
+    </div>`;
+}
+
+function handleDelete(mod, id, btn){
+  const key = mod+":"+id;
+  if(confirmingDelete===key){
+    confirmingDelete = null;
+    if(db) db.collection(COLLECTION_NAME[mod]).doc(id).delete().catch(()=>{});
+  } else {
+    confirmingDelete = key;
+    renderList(mod);
+    setTimeout(()=>{ if(confirmingDelete===key){ confirmingDelete=null; if(activeTab===mod) renderList(mod); } }, 4000);
+  }
+}
+
+function completeInspection(id){
+  const r = data.inspections.find(x=>x.id===id);
+  if(!r || !db) return;
+  const today = todayISO();
+  const months = FREQ_MONTHS[r.frequency];
+  const patch = { lastCompletedDate: today };
+  if(months) patch.scheduledDate = addMonths(today, months);
+  db.collection("inspections").doc(id).update(patch).catch(()=>{});
+}
+
+/* ---------- add / edit sheet ---------- */
+function openSheet(mod, id){
+  editing = { mod, id };
+  const cfg = MODULES[mod];
+  const record = id ? data[mod].find(r=>r.id===id) || {} : {};
+  sheetTitle.textContent = (id? "Edit ":"Add ") + cfg.singular;
+  sheetBody.innerHTML = cfg.fields.map(f=>fieldHtml(f, record)).join("");
+  sheet.showModal();
+  const firstInput = sheetBody.querySelector("input,select,textarea");
+  if(firstInput) setTimeout(()=>firstInput.focus(), 30);
+}
+
+function fieldHtml(f, record){
+  const val = record[f.key] ?? (record.id ? "" : (f.default||""));
+  const id = "f_"+f.key;
+  const req = f.required ? ' required' : '';
+  const reqMark = f.required ? ' <span class="req">*</span>' : '';
+  let control = "";
+  if(f.type==="select"){
+    control = `<select id="${id}"${req}>` + (f.required?'':'<option value=""></option>') +
+      f.options.map(o=>`<option value="${esc(o)}" ${o===val?'selected':''}>${esc(o)}</option>`).join("") + `</select>`;
+  } else if(f.type==="textarea"){
+    control = `<textarea id="${id}"${req} rows="${f.rows||3}" placeholder="${esc(f.placeholder||'')}">${esc(val)}</textarea>`;
+  } else {
+    control = `<input type="${f.type}" id="${id}"${req} value="${esc(val)}" placeholder="${esc(f.placeholder||'')}">`;
+  }
+  return `<div class="field"><label for="${id}">${esc(f.label)}${reqMark}</label>${control}</div>`;
+}
+
+document.getElementById("sheetClose").addEventListener("click",()=>sheet.close());
+document.getElementById("sheetCancel").addEventListener("click",()=>sheet.close());
+sheet.addEventListener("close",()=>{ editing=null; });
+
+sheetForm.addEventListener("submit", async (e)=>{
+  e.preventDefault();
+  if(!editing) return;
+  const { mod, id } = editing;
+  const cfg = MODULES[mod];
+  const payload = {};
+  for(const f of cfg.fields){
+    const el = document.getElementById("f_"+f.key);
+    if(!el) continue;
+    if(f.required && !el.value.trim()){ el.reportValidity(); return; }
+    payload[f.key] = el.value.trim();
+  }
+  if(!db){ sheet.close(); return; }
+  const saveBtn = document.getElementById("sheetSave");
+  saveBtn.disabled = true;
+  try{
+    const coll = db.collection(COLLECTION_NAME[mod]);
+    if(id){
+      await coll.doc(id).update(payload);
+    } else {
+      payload.createdAt = Date.now();
+      await coll.add(payload);
+    }
+    sheet.close();
+  } catch(err){
+    alert("Could not save: " + (err && err.message ? err.message : "unknown error"));
+  } finally {
+    saveBtn.disabled = false;
+  }
+});
+
+/* ---------- utils ---------- */
+function esc(s){
+  return String(s==null?"":s).replace(/[&<>"']/g, c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+}
+
+/* ---------- boot ---------- */
+function setConn(state){
+  const head = document.getElementById("connSignal");
+  const label = document.getElementById("connLabel");
+  if(!head) return;
+  const aspect = (state==="live"||state==="local") ? "ok" : state==="offline" ? "danger" : "warn";
+  head.querySelectorAll(".lamp").forEach(l=>{
+    l.classList.toggle("lit-"+l.dataset.aspect, l.dataset.aspect===aspect);
+  });
+  label.textContent = state==="live" ? "Synced" : state==="local" ? "On this device" : state==="offline" ? "No database" : "Starting";
+}
+
+render();
+setConn("connecting");
+
+async function boot(){
+  // If this page is ever opened inside a Claude artifact runtime, prefer
+  // its live synced database; otherwise (GitHub Pages, Home Screen, any
+  // ordinary web host) fall back to an on-device store automatically.
+  try{
+    db = window.claude ? await window.claude.use("db") : null;
+  }catch(e){ db = null; }
+  if(!db){
+    db = new LocalDB("adste_data_v1");
+    localMode = true;
+  }
+  setConn(localMode ? "local" : "live");
+  Object.entries(COLLECTION_NAME).forEach(([mod, coll])=>{
+    db.collection(coll).onSnapshot(snap=>{
+      data[mod] = snap.docs.map(d=>({ id:d.id, ...d.data() }));
+      render();
+    }, err=>{ console.error(coll, err); });
+  });
+}
+boot();
+
+})();
+</script>
+</body>
+</html>
