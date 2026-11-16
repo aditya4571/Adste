@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>TELE WORKS BZA - Materials Monitor</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<style>
+:root{--navy:#1f3864;--ink:#1d2433;--mut:#6b7385;--line:#e4e8f0;--bg:#f3f5f9;--card:#fff;
+--g:#2e9e5b;--o:#e8833a;--b:#2f7dd1;--t:#1aa7a0;--r:#c0392b;--gr:#8c8c8c;--rad:12px}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;background:var(--bg);color:var(--ink);line-height:1.45;font-size:14px}
+a{color:var(--b);text-decoration:none}
+.wrap{max-width:1320px;margin:0 auto;padding:14px}
+header{background:linear-gradient(120deg,#1f3864,#2f5597);color:#fff;border-radius:var(--rad);padding:18px 22px;display:flex;flex-wrap:wrap;gap:12px;align-items:center;justify-content:space-between}
+header h1{font-size:20px;letter-spacing:.3px}
+header .sub{font-size:12px;opacity:.8;margin-top:2px}
+.hb{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+button,select,input{font:inherit}
+.btn{background:rgba(255,255,255,.16);color:#fff;border:1px solid rgba(255,255,255,.35);border-radius:8px;padding:7px 12px;cursor:pointer;font-size:13px}
+.btn:hover{background:rgba(255,255,255,.28)}
+.stamp{font-size:12px;opacity:.85}
+.bar{display:flex;flex-wrap:wrap;gap:10px;margin:14px 0 0;align-items:center}
+.bar label{font-size:12px;color:var(--mut)}
+.bar select,.bar input{padding:7px 10px;border:1px solid var(--line);border-radius:8px;background:#fff;min-width:130px}
+#msg{margin-top:12px;padding:10px 14px;border-radius:10px;display:none;font-size:13px}
+#msg.err{display:block;background:#fdecea;color:#8a1f17;border:1px solid #f5c6c2}
+#msg.ok{display:block;background:#e8f5ee;color:#1d6b3f;border:1px solid #bfe3cf}
+.kpis{display:grid;grid-template-columns:repeat(6,1fr);gap:12px;margin:14px 0}
+.kpi{background:var(--card);border-radius:var(--rad);padding:14px 16px;border-top:4px solid var(--c);box-shadow:0 1px 3px rgba(20,30,60,.07)}
+.kpi .l{font-size:11px;text-transform:uppercase;letter-spacing:.6px;color:var(--mut)}
+.kpi .v{font-size:26px;font-weight:700;color:var(--c);margin:2px 0}
+.kpi .s{font-size:12px;color:var(--mut)}
+.grid{display:grid;gap:12px;margin-bottom:12px}
+.g2{grid-template-columns:1.25fr 1fr}
+.g3{grid-template-columns:1fr 1fr 1fr}
+.card{background:var(--card);border-radius:var(--rad);padding:16px 18px;box-shadow:0 1px 3px rgba(20,30,60,.07);min-width:0}
+.card h2{font-size:14px;color:var(--navy);margin-bottom:10px;display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap}
+.card h2 small{font-weight:400;color:var(--mut);font-size:12px}
+.ch{position:relative;height:300px}
+.tw{overflow-x:auto}
+table{border-collapse:collapse;width:100%;font-size:13px}
+th{background:#eef2fa;color:var(--navy);text-align:left;padding:8px 10px;font-size:12px;white-space:nowrap;position:sticky;top:0;cursor:pointer;user-select:none}
+th.n,td.n{text-align:right}
+td{padding:7px 10px;border-bottom:1px solid var(--line);vertical-align:middle}
+tr:hover td{background:#f8faff}
+tr.click{cursor:pointer}
+.pb{position:relative;background:#edf0f6;border-radius:6px;height:18px;min-width:90px}
+.pb i{position:absolute;left:0;top:0;bottom:0;border-radius:6px;background:var(--c,#2f7dd1);opacity:.85}
+.pb span{position:relative;font-size:11px;font-weight:600;padding-left:6px;line-height:18px;color:#13203a}
+.chip{display:inline-block;padding:2px 8px;border-radius:999px;font-size:11px;font-weight:600;white-space:nowrap}
+.c-red{background:#fdecea;color:#a4281c}.c-amb{background:#fff4d6;color:#8a6100}.c-grn{background:#e3f4ea;color:#1d6b3f}.c-gry{background:#eceff5;color:#4a5368}.c-blu{background:#e5eefb;color:#1d4f9a}
+.scroll{max-height:560px;overflow:auto;border:1px solid var(--line);border-radius:8px}
+.pg{display:flex;gap:8px;justify-content:flex-end;align-items:center;margin-top:8px;font-size:12px;color:var(--mut)}
+.pg button{border:1px solid var(--line);background:#fff;border-radius:6px;padding:4px 10px;cursor:pointer}
+.pg button:disabled{opacity:.4;cursor:default}
+#detail{display:none;border:2px solid var(--b);border-radius:10px;padding:12px;margin-bottom:12px;background:#f8fbff}
+.foot{text-align:center;color:var(--mut);font-size:12px;padding:14px 0 24px}
+@media(max-width:1000px){.kpis{grid-template-columns:repeat(3,1fr)}.g2,.g3{grid-template-columns:1fr}}
+@media(max-width:560px){.kpis{grid-template-columns:repeat(2,1fr)}.kpi .v{font-size:22px}.wrap{padding:8px}header{padding:14px}}
+@media print{.bar,.btn,.pg{display:none}body{background:#fff}}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header>
+  <div><h1>TELE WORKS BZA - Materials Monitor</h1><div class="sub">WL/BZA store, Vijayawada Division &middot; contractor supply, issue to stations and installation</div></div>
+  <div class="hb"><span class="stamp" id="stamp">Loading...</span><button class="btn" id="refresh">Refresh</button><a class="btn" id="open" target="_blank" rel="noopener">Open Google Sheet</a></div>
+</header>
+<div id="msg"></div>
+<div class="bar">
+  <div><label>Contract<br><select id="fCon"></select></label></div>
+  <div><label>Item status<br><select id="fSta"></select></label></div>
+  <div><label>Item type<br><select id="fTyp"></select></label></div>
+  <div style="flex:1;min-width:180px"><label>Search items<br><input id="fQ" placeholder="type any part of an item name - with the filters above" style="width:100%"></label></div>
+</div>
+<section class="kpis" id="kpis"></section>
+<div class="grid g2">
+  <div class="card"><h2>Progress by contract <small>share of supply / installation value</small></h2><div class="ch"><canvas id="cProg"></canvas></div></div>
+  <div class="card"><h2>Status of items <small id="stN"></small></h2><div class="ch"><canvas id="cSta"></canvas></div></div>
+</div>
+<div class="grid g2">
+  <div class="card"><h2>Where the supply value sits <small>Rs lakh</small></h2><div class="ch"><canvas id="cVal"></canvas></div></div>
+  <div class="card"><h2>Contract summary</h2><div class="tw"><table id="tCon"></table></div></div>
+</div>
+<div class="card" style="margin-bottom:12px">
+  <h2>All stations <small id="stCount"></small>
+    <input id="fS" placeholder="type a station name - items, issued &amp; installed show below" style="padding:6px 10px;border:1px solid var(--line);border-radius:8px"></h2>
+  <div id="detail"></div>
+  <div class="scroll"><table id="tSt"></table></div>
+  <div style="font-size:12px;color:var(--mut);margin-top:6px">Click a station to see its items. Click a column heading to sort.</div>
+</div>
+<div class="card" style="margin-bottom:12px">
+  <h2>Items <small id="itN"></small></h2>
+  <div class="tw scroll"><table id="tIt"></table></div>
+  <div class="pg"><span id="pgInfo"></span><button id="pgP">Prev</button><button id="pgN">Next</button></div>
+</div>
+<div class="card" style="margin-bottom:12px" id="entryCard">
+  <h2>Add entry <small>posts straight into the Google Sheet (Data Entry log)</small> <button class="btn" id="eTog" style="background:var(--navy);color:#fff;margin-left:8px">Show form</button></h2>
+  <div id="eBox" style="display:none">
+    <div id="eNote" style="color:var(--r);margin-bottom:8px"></div>
+    <div class="bar" style="flex-wrap:wrap;align-items:flex-end">
+      <div><label>Date<br><input type="date" id="eDate"></label></div>
+      <div><label>Entry type<br><select id="eType"><option>Received at WL/BZA</option><option>Issued to station</option><option>Installed at station</option></select></label></div>
+      <div><label>Contract<br><select id="eCon"></select></label></div>
+      <div style="flex:1;min-width:160px"><label>Search item<br><input id="eQ" placeholder="part of item name" style="width:100%"></label></div>
+    </div>
+    <div class="bar" style="flex-wrap:wrap;align-items:flex-end">
+      <div style="flex:2;min-width:260px"><label>Item<br><select id="eItem" style="width:100%"></select></label></div>
+      <div><label>Station<br><select id="eSt"></select></label></div>
+      <div><label>Quantity<br><input type="number" id="eQty" min="0" step="any" style="width:100px"></label></div>
+      <div><label>Remarks<br><input id="eRem" style="width:160px"></label></div>
+      <div><label>PIN<br><input type="password" id="ePin" style="width:100px"></label></div>
+      <div><button class="btn" id="eGo" style="background:var(--g);color:#fff">Submit entry</button></div>
+    </div>
+    <div id="eInfo" style="font-size:13px;margin:6px 0;color:var(--mut)"></div>
+    <div id="eRes" style="font-weight:600"></div>
+  </div>
+</div>
+<div class="card">
+  <h2>Latest entries <small>from the Entry Register sheet, newest first</small></h2>
+  <div class="tw"><table id="tEn"></table></div>
+</div>
+<div class="foot">Data is read live from the Google Sheet; nothing is stored on this page. Rs L = Rs lakh, Rs Cr = Rs crore.</div>
+</div>
+
+<script>
+/* ============ CONFIGURATION: change only this block ============ */
+const CFG = {
+  SHEET_ID: "1JLUJaOLOrFjbwFQ3OEVusKspOJ1gCMYnRIzKOCP2DaI",
+  REFRESH_MINUTES: 5,
+  PAGE_SIZE: 25,
+  ENTRY_URL: ""   /* paste the Apps Script Web app URL (ends /exec) to enable the Add entry form */
+};
+/* ================================================================ */
+const BASE = `https://docs.google.com/spreadsheets/d/${CFG.SHEET_ID}`;
+document.getElementById('open').href = BASE + '/edit';
+const $ = id => document.getElementById(id);
+const COL = {g:'#2e9e5b',o:'#e8833a',b:'#2f7dd1',t:'#1aa7a0',gr:'#b9bfcc',r:'#c0392b'};
+let S = {items:[],stations:[],entries:[],page:0,sortSt:{k:'allot',d:-1},detailFor:null};
+const charts = {};
+
+/* ---------- data access ---------- */
+function parseCSV(t){
+  const rows=[];let row=[],f='',q=false;
+  for(let i=0;i<t.length;i++){const c=t[i];
+    if(q){ if(c==='"'){ if(t[i+1]==='"'){f+='"';i++} else q=false } else f+=c }
+    else if(c==='"') q=true;
+    else if(c===','){row.push(f);f=''}
+    else if(c==='\n'){row.push(f);rows.push(row);row=[];f=''}
+    else if(c!=='\r') f+=c;
+  }
+  if(f!==''||row.length){row.push(f);rows.push(row)}
+  return rows;
+}
+let _jp=0;
+function sheet(name, range, tq){
+  // JSONP via <script> tag: works from file:// and any host (no CORS needed)
+  return new Promise((resolve,reject)=>{
+    const cb='__gv'+(++_jp)+'_'+Date.now();
+    let u = `${BASE}/gviz/tq?tqx=${encodeURIComponent('out:json;responseHandler:'+cb)}&sheet=${encodeURIComponent(name)}&range=${range}&headers=1&_=${Date.now()}`;
+    if(tq) u += '&tq=' + encodeURIComponent(tq);
+    const sc=document.createElement('script');
+    const done=()=>{ delete window[cb]; sc.remove(); clearTimeout(tm); };
+    const tm=setTimeout(()=>{ done(); reject(new Error(name+': no response from Google (check internet / that the sheet is shared "Anyone with the link")')) }, 25000);
+    window[cb]=(resp)=>{
+      done();
+      if(!resp || resp.status!=='ok'){ const m=(resp&&resp.errors&&resp.errors[0]&&(resp.errors[0].detailed_message||resp.errors[0].message))||'query error'; return reject(new Error(name+': '+m)); }
+      const t=resp.table, heads=t.cols.map((c,i)=>c.label||c.id||('c'+i));
+      const rows=t.rows.map(r=>Object.fromEntries(heads.map((h,i)=>{ const c=r.c[i]; return [h, c==null?'':(c.f!=null&&c.f!==''?String(c.f):(c.v==null?'':String(c.v)))] })));
+      resolve(rows.filter(r=>Object.values(r).some(x=>x!=='')));
+    };
+    sc.onerror=()=>{ done(); reject(new Error(name+': could not reach docs.google.com (or the sheet is not shared as "Anyone with the link")')) };
+    sc.src=u; document.head.appendChild(sc);
+  });
+}
+const num = s => { if(s==null||s==='') return 0; const p=String(s).includes('%'); const n=parseFloat(String(s).replace(/[,%\s]/g,'')); return isNaN(n)?0:(p?n/100:n) };
+const fmt = (n,d=1) => n.toLocaleString('en-IN',{minimumFractionDigits:d,maximumFractionDigits:d});
+const pct = n => (n*100).toFixed(n>=.995||n===0?0:1)+'%';
+
+async function load(){
+  $('stamp').textContent='Loading...';
+  try{
+    const [it, st, en] = await Promise.all([
+      sheet('Tracker','A4:AA649','select A,B,C,E,G,H,I,L,N,Q,R,S,AA'),
+      sheet('Station Performance','A4:S67'),
+      sheet('Entry Register','A5:I60').catch(()=>[])
+    ]);
+    S.items = it.map(r=>({ref:r['Ref'],work:r['Contract / Work'],item:r['Item (standardised)'],type:r['Type'],qty:num(r['Contract Qty']),
+      rec:num(r['Received at WL/BZA']),iss:num(r['Issued to Stations']),ins:num(r['Installed']),status:r['STATUS (auto)'],
+      rate:num(r['Rate (Rs)']),val:num(r['Contract Value (Rs)']),con:r['Short'],last:r['Last Receipt Date']}));
+    S.stations = st.map(r=>({name:r['Station / Location'],n:num(r['Items allotted']),allot:num(r['Supply allotted (Rs)']),iss:num(r['Issued (Rs)']),
+      pi:num(r['% issued']),instAllot:num(r['Install allotted (Rs)']),inst:num(r['Installed (Rs)']),pn:num(r['% installed']),ov:num(r['OVERALL % (value)']),chk:num(r['CHECK flags'])}));
+    S.entries = en;
+    if(!S.items.length) throw new Error('No rows came back from the Tracker sheet');
+    $('msg').className=''; $('msg').style.display='none';
+    $('stamp').textContent='Updated ' + new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});
+    buildFilters(); render();
+  }catch(e){
+    $('msg').className='err';
+    $('msg').innerHTML='<b>Could not read the Google Sheet.</b> '+e.message+'. Check that the sheet is shared as "Anyone with the link" (Viewer is enough) and the sheet ID in this page is correct. <a href="#" onclick="load();return false">Try again</a>';
+    $('stamp').textContent='Not updated';
+  }
+}
+
+/* ---------- filters ---------- */
+function opts(el, arr, all){ const cur=el.value; el.innerHTML=`<option value="">${all}</option>`+arr.map(v=>`<option>${v}</option>`).join(''); if(arr.includes(cur)) el.value=cur }
+function buildFilters(){
+  opts($('fCon'),[...new Set(S.items.map(i=>i.con))],'All contracts');
+  opts($('fSta'),[...new Set(S.items.map(i=>i.status))].sort(),'All statuses');
+  opts($('fTyp'),[...new Set(S.items.map(i=>i.type))].sort(),'All types');
+}
+function filtered(skipStatus){
+  const c=$('fCon').value,s=$('fSta').value,t=$('fTyp').value,q=$('fQ').value.trim().toLowerCase(), w=q?q.split(/\s+/):[];
+  return S.items.filter(i=>(!c||i.con===c)&&(skipStatus||!s||i.status===s)&&(!t||i.type===t)&&
+    (!w.length||w.every(x=>(i.item+' '+i.ref+' '+i.con+' '+i.type+' '+i.status).toLowerCase().includes(x))));
+}
+['fCon','fSta','fTyp'].forEach(id=>$(id).onchange=()=>{S.page=0;render()});
+$('fQ').oninput=()=>{S.page=0;render()};
+$('refresh').onclick=load;
+
+/* ---------- calculations ---------- */
+function agg(list){
+  const sup=list.filter(i=>i.type==='Supply'), ins=list.filter(i=>i.type!=='Supply');
+  const sv=sup.reduce((a,i)=>a+i.val,0), iv=ins.reduce((a,i)=>a+i.val,0);
+  const rec=sup.reduce((a,i)=>a+i.rec*i.rate,0), iss=sup.reduce((a,i)=>a+i.iss*i.rate,0), inst=ins.reduce((a,i)=>a+i.ins*i.rate,0);
+  return {sv,iv,rec,iss,inst,stock:rec-iss,pending:sv-rec,pr:sv?rec/sv:0,pi:sv?iss/sv:0,pn:iv?inst/iv:0};
+}
+const STAT_COL = s => /^CHECK/i.test(s)?'c-red':/Completed|Fully issued|Issued$/.test(s)?'c-grn':/Part|progress|awaiting|Pending issue/i.test(s)?'c-amb':/Not/.test(s)?'c-gry':'c-blu';
+
+/* ---------- render ---------- */
+function render(){
+  const list=filtered(true), A=agg(list);
+  const chk=list.filter(i=>/^CHECK/i.test(i.status)).length + S.entries.filter(e=>e['Check']&&e['Check']!=='OK'&&e['Check']!=='Incomplete').length;
+  const k=[['Received at WL/BZA',pct(A.pr),'of Rs '+fmt(A.sv/1e7,2)+' Cr supply',COL.g],
+    ['Issued to stations',pct(A.pi),'Rs '+fmt(A.iss/1e7,2)+' Cr issued',COL.o],
+    ['Installation done',pct(A.pn),'of Rs '+fmt(A.iv/1e7,2)+' Cr work',COL.b],
+    ['Stock at WL/BZA','Rs '+fmt(A.stock/1e7,2)+' Cr','received, not yet issued',COL.t],
+    ['Pending from contractors','Rs '+fmt(A.pending/1e7,2)+' Cr','supply not yet received',COL.gr],
+    ['Entries to check',chk,list.length+' items in view',chk?COL.r:COL.g]];
+  $('kpis').innerHTML=k.map(x=>`<div class="kpi" style="--c:${x[3]}"><div class="l">${x[0]}</div><div class="v">${x[1]}</div><div class="s">${x[2]}</div></div>`).join('');
+
+  const cons=[...new Set(S.items.map(i=>i.con))], rows=cons.map(c=>({c,...agg(S.items.filter(i=>i.con===c))}));
+  chart('cProg',{type:'bar',data:{labels:cons,datasets:[
+    {label:'Received',data:rows.map(r=>+(r.pr*100).toFixed(1)),backgroundColor:COL.g},
+    {label:'Issued',data:rows.map(r=>+(r.pi*100).toFixed(1)),backgroundColor:COL.o},
+    {label:'Installed',data:rows.map(r=>+(r.pn*100).toFixed(1)),backgroundColor:COL.b}]},
+    options:{indexAxis:'y',maintainAspectRatio:false,scales:{x:{max:100,ticks:{callback:v=>v+'%'}}},plugins:{legend:{position:'bottom'}}}});
+  chart('cVal',{type:'bar',data:{labels:cons,datasets:[
+    {label:'Issued to stations',data:rows.map(r=>+(r.iss/1e5).toFixed(1)),backgroundColor:COL.b},
+    {label:'Stock at WL/BZA',data:rows.map(r=>+(r.stock/1e5).toFixed(1)),backgroundColor:COL.t},
+    {label:'Pending from contractor',data:rows.map(r=>+(r.pending/1e5).toFixed(1)),backgroundColor:COL.gr}]},
+    options:{indexAxis:'y',maintainAspectRatio:false,scales:{x:{stacked:true},y:{stacked:true}},plugins:{legend:{position:'bottom'}}}});
+  const sc={};list.forEach(i=>sc[i.status]=(sc[i.status]||0)+1);
+  const sl=Object.keys(sc).sort((a,b)=>sc[b]-sc[a]);
+  $('stN').textContent=list.length+' items';
+  chart('cSta',{type:'doughnut',data:{labels:sl,datasets:[{data:sl.map(s=>sc[s]),backgroundColor:sl.map(s=>({'c-red':COL.r,'c-grn':COL.g,'c-amb':COL.o,'c-gry':COL.gr,'c-blu':COL.b})[STAT_COL(s)]),borderWidth:2,borderColor:'#fff'}]},
+    options:{maintainAspectRatio:false,cutout:'58%',plugins:{legend:{position:'right'}}}});
+
+  $('tCon').innerHTML='<tr><th>Contract</th><th class="n">Supply Rs L</th><th class="n">Install Rs L</th><th class="n">Stock Rs L</th><th class="n">Pending Rs L</th></tr>'+
+    rows.map(r=>`<tr class="click" onclick="pickCon('${r.c}')"><td><b>${r.c}</b></td><td class="n">${fmt(r.sv/1e5)}</td><td class="n">${fmt(r.iv/1e5)}</td><td class="n">${fmt(r.stock/1e5)}</td><td class="n">${fmt(r.pending/1e5)}</td></tr>`).join('')+
+    `<tr><td><b>TOTAL</b></td>${['sv','iv','stock','pending'].map(f=>`<td class="n"><b>${fmt(rows.reduce((a,r)=>a+r[f],0)/1e5)}</b></td>`).join('')}</tr>`;
+
+  renderStations(); renderItems(); renderEntries();
+}
+function chart(id,cfg){ if(charts[id]) charts[id].destroy(); cfg.options.animation=false; charts[id]=new Chart($(id),cfg) }
+function pickCon(c){ $('fCon').value=c; S.page=0; render(); window.scrollTo({top:$('tIt').offsetTop-80,behavior:'smooth'}) }
+
+const bar = (v,c)=>`<div class="pb" style="--c:${c}"><i style="width:${Math.min(100,v*100)}%"></i><span>${pct(v)}</span></div>`;
+function renderStations(){
+  const q=$('fS').value.trim().toLowerCase(), {k,d}=S.sortSt;
+  const rows=S.stations.filter(s=>!q||s.name.toLowerCase().includes(q)).sort((a,b)=>d*((a[k]>b[k])-(a[k]<b[k])||0)||0);
+  $('stCount').textContent=rows.length+' of '+S.stations.length;
+  const H=[['name','Station'],['n','Items','n'],['allot','Supply Rs L','n'],['pi','Issued'],['instAllot','Install Rs L','n'],['pn','Installed'],['ov','Overall']];
+  $('tSt').innerHTML='<tr>'+H.map(h=>`<th class="${h[2]||''}" data-k="${h[0]}">${h[1]}${k===h[0]?(d>0?' &#9650;':' &#9660;'):''}</th>`).join('')+'</tr>'+
+    rows.map(s=>`<tr class="click" data-st="${s.name.replace(/"/g,'&quot;')}"><td><b>${s.name}</b></td><td class="n">${s.n}</td><td class="n">${fmt(s.allot/1e5)}</td><td>${bar(s.pi,COL.o)}</td><td class="n">${fmt(s.instAllot/1e5)}</td><td>${bar(s.pn,COL.b)}</td><td>${bar(s.ov,COL.g)}</td></tr>`).join('');
+  $('tSt').querySelectorAll('th').forEach(th=>th.onclick=()=>{const kk=th.dataset.k; S.sortSt={k:kk,d:S.sortSt.k===kk?-S.sortSt.d:(kk==='name'?1:-1)}; renderStations()});
+  $('tSt').querySelectorAll('tr[data-st]').forEach(tr=>tr.onclick=()=>stationDetail(tr.dataset.st));
+}
+let _stT; $('fS').oninput=()=>{ renderStations(); clearTimeout(_stT); _stT=setTimeout(()=>{
+  const q=$('fS').value.trim().toLowerCase(); if(!q){ $('detail').style.display='none'; return }
+  const m=S.stations.filter(x=>x.name.toLowerCase().includes(q)), ex=m.find(x=>x.name.toLowerCase()===q);
+  if(ex||m.length===1) stationDetail((ex||m[0]).name); else { $('detail').style.display='block'; $('detail').innerHTML='<small>'+m.length+' stations match - click one below to see its item-wise allotted / issued / installed quantities.</small>' }
+},350) };
+
+let _detSeq=0;
+const q2=n=>(Math.round(n*100)/100).toLocaleString('en-IN');
+async function stationDetail(name){
+  const el=$('detail'), seq=++_detSeq; el.style.display='block'; el.innerHTML='Loading items for <b>'+name+'</b>...';
+  try{
+    const rows=await sheet('Station Issue','A4:O4552',`select A,B,C,D,E,H,I,J,K,L,N where G = '${name.replace(/'/g,"''")}'`);
+    if(seq!==_detSeq) return;
+    const c=$('fCon').value, tf=$('fTyp').value;
+    const all=rows.filter(r=>(!c||r['Contract / Work'].startsWith(c))&&(!tf||r['Type']===tf));
+    el.dataset.name=name; el._rows=all;
+    el.innerHTML=`<h2 style="margin-bottom:8px">${name} <small id="dN"></small>
+      <input id="dQ" placeholder="filter these items" style="padding:5px 9px;border:1px solid var(--line);border-radius:8px;margin-left:8px">
+      <label style="font-size:12px;margin-left:8px"><input type="checkbox" id="dAct"> only items with issue / install</label>
+      <small><a href="#" onclick="$('detail').style.display='none';return false" style="margin-left:10px">close</a></small></h2>
+      <div class="scroll" style="max-height:420px"><table id="dT"></table></div>`;
+    $('dQ').oninput=drawDetail; $('dAct').onchange=drawDetail; drawDetail();
+    el.scrollIntoView({block:'nearest',behavior:'smooth'});
+  }catch(e){ el.innerHTML='Could not load station items: '+e.message }
+}
+function drawDetail(){
+  const el=$('detail'), q=($('dQ').value||'').trim().toLowerCase().split(/\s+/).filter(Boolean), act=$('dAct').checked;
+  const L=el._rows.filter(r=>q.every(w=>(r['Ref']+' '+r['Contract / Work']+' '+r['Item (standardised)']).toLowerCase().includes(w))&&(!act||num(r['Issued to Station'])+num(r['Installed at Station'])>0));
+  const T={a:0,i:0,n:0};
+  const body=L.map(r=>{const al=num(r['Allotted Qty']),is=num(r['Issued to Station']),ins=num(r['Installed at Station']),isI=r['Type']!=='Supply',isS=r['Type']!=='Installation';
+    T.a+=al;T.i+=is;T.n+=ins;
+    return `<tr><td>${r['Ref']}</td><td>${r['Contract / Work']}</td><td>${r['Item (standardised)']}</td><td>${r['Type']}</td><td>${r['Unit']||''}</td><td class="n">${q2(al)}</td><td class="n">${isS?q2(is):'-'}</td><td class="n">${isS?q2(al-is):'-'}</td><td class="n">${isI?q2(ins):'-'}</td><td class="n">${isI?q2(al-ins):'-'}</td><td><span class="chip ${STAT_COL(r['STATUS (auto)'])}">${r['STATUS (auto)']}</span></td></tr>`}).join('');
+  $('dN').textContent=L.length+' items'+($('fCon').value?' in '+$('fCon').value:'');
+  $('dT').innerHTML='<tr><th>Ref</th><th>Contract / Work</th><th>Item</th><th>Type</th><th>Unit</th><th class="n">Allotted</th><th class="n">Issued</th><th class="n">Pending issue</th><th class="n">Installed</th><th class="n">Pending install</th><th>Status</th></tr>'+(body||'<tr><td colspan="11">No items.</td></tr>');
+}
+
+function renderItems(){
+  const list=filtered(false), n=list.length, P=CFG.PAGE_SIZE, pages=Math.max(1,Math.ceil(n/P));
+  S.page=Math.min(S.page,pages-1);
+  $('itN').textContent=n+' items';
+  const q=$('fQ').value.trim(); let nb=$('searchNote');
+  if(!nb){ nb=document.createElement('div'); nb.id='searchNote'; nb.style.cssText='margin:6px 0 10px;padding:8px 12px;background:#eef4ff;border-radius:8px;font-size:13px;color:#1f3a6e'; $('tIt').parentNode.insertBefore(nb,$('tIt')) }
+  if(q){ const bc={}; list.forEach(i=>bc[i.con]=(bc[i.con]||0)+1);
+    nb.style.display='block'; nb.innerHTML=n?`Searching for "<b>${q.replace(/</g,'&lt;')}</b>", with the filters above applied: `+Object.entries(bc).map(([c,k])=>`<b>${c}</b> ${k}`).join(' &middot; '):`No item matches "<b>${q.replace(/</g,'&lt;')}</b>" with the current filters. Set Contract to "All contracts" to search every work.`; }
+  else nb.style.display='none';
+  $('tIt').innerHTML='<tr><th>Ref</th><th>Contract</th><th>Item</th><th>Type</th><th class="n">Qty</th><th class="n">Received</th><th class="n">Issued</th><th class="n">Installed</th><th>Status</th></tr>'+
+    list.slice(S.page*P,S.page*P+P).map(i=>`<tr><td>${i.ref}</td><td>${i.con}</td><td>${i.item}</td><td>${i.type}</td><td class="n">${i.qty}</td><td class="n">${i.rec}</td><td class="n">${i.iss}</td><td class="n">${i.ins}</td><td><span class="chip ${STAT_COL(i.status)}">${i.status}</span></td></tr>`).join('');
+  $('pgInfo').textContent=`Page ${S.page+1} of ${pages}`; $('pgP').disabled=S.page===0; $('pgN').disabled=S.page>=pages-1;
+}
+$('pgP').onclick=()=>{S.page--;renderItems()}; $('pgN').onclick=()=>{S.page++;renderItems()};
+
+function renderEntries(){
+  const e=S.entries.filter(r=>r['Entry no.']).slice(0,15);
+  $('tEn').innerHTML=e.length?'<tr><th>No.</th><th>Date</th><th>Entry type</th><th>Contract</th><th>Item</th><th>Station</th><th class="n">Qty</th><th>Check</th></tr>'+
+    e.map(r=>`<tr><td>${r['Entry no.']}</td><td>${r['Date']}</td><td>${r['Entry type']}</td><td>${r['Contract']}</td><td>${r['Item']}</td><td>${r['Station']||'-'}</td><td class="n">${num(r['Qty'])}</td><td><span class="chip ${r['Check']==='OK'?'c-grn':'c-red'}">${r['Check']}</span></td></tr>`).join('')
+    :'<tr><td style="color:#6b7385">No entries posted yet.</td></tr>';
+}
+
+load(); setInterval(load, CFG.REFRESH_MINUTES*60000);
+
+/* ---------- Add entry form ---------- */
+let _eSeq=0;
+function eFillItems(){
+  const c=$('eCon').value,q=$('eQ').value.trim().toLowerCase().split(/\s+/).filter(Boolean);
+  const l=S.items.filter(i=>(!c||i.con===c)&&q.every(w=>(i.ref+' '+i.item+' '+i.type).toLowerCase().includes(w)));
+  $('eItem').innerHTML=l.slice(0,400).map(i=>`<option value="${i.ref}">${i.ref} | ${i.item} [${i.type}]</option>`).join('')||'<option value="">no match</option>';
+  eStations();
+}
+async function eStations(){
+  const ref=$('eItem').value,seq=++_eSeq,rec=$('eType').value==='Received at WL/BZA';
+  $('eSt').disabled=rec; $('eInfo').textContent='';
+  if(rec||!ref){$('eSt').innerHTML='<option value="">(not used for receipt)</option>';
+    const it=S.items.find(i=>i.ref===ref); if(it)$('eInfo').textContent=`Agreement ${it.qty} | received ${it.rec} | issued ${it.iss} | installed ${it.ins}`; return;}
+  $('eSt').innerHTML='<option>loading...</option>';
+  try{
+    const r=await sheet('Station Issue','A4:O4552',`select G,H,I,K where A = '${ref}'`);
+    if(seq!==_eSeq)return;
+    window._eSt=r;
+    $('eSt').innerHTML=r.map(x=>`<option>${x['Station / Location']||Object.values(x)[0]}</option>`).join('')||'<option value="">no station allotted</option>';
+    eInfoUpd();
+  }catch(e){$('eSt').innerHTML='<option value="">could not load</option>'}
+}
+function eInfoUpd(){
+  const n=$('eSt').value,r=(window._eSt||[]).find(x=>Object.values(x)[0]===n); if(!r)return;
+  const v=Object.values(r); $('eInfo').textContent=`${n}: allotted ${v[1]} | issued ${v[2]} | installed ${v[3]}`;
+}
+function eInit(){
+  const cons=[...new Set(S.items.map(i=>i.con))].filter(Boolean);
+  $('eCon').innerHTML=cons.map(c=>`<option>${c}</option>`).join('');
+  if(!$('eDate').value)$('eDate').value=new Date().toISOString().slice(0,10);
+  $('ePin').value=localStorage.getItem('ePin')||'';
+  if(!CFG.ENTRY_URL)$('eNote').textContent='Form not connected yet: paste the Apps Script Web app URL into ENTRY_URL in the CFG block (see setup steps).';
+  eFillItems();
+}
+$('eTog').onclick=()=>{const b=$('eBox'),o=b.style.display==='none';b.style.display=o?'block':'none';$('eTog').textContent=o?'Hide form':'Show form'; if(o&&!$('eCon').options.length&&S.items.length)eInit()};
+$('eCon').onchange=eFillItems; $('eQ').oninput=eFillItems; $('eItem').onchange=eStations; $('eType').onchange=eStations; $('eSt').onchange=eInfoUpd;
+$('eGo').onclick=()=>{
+  const res=$('eRes'); res.style.color='var(--ink)';
+  if(!CFG.ENTRY_URL){res.textContent='Not connected: ENTRY_URL is empty.';res.style.color='var(--r)';return}
+  const type=$('eType').value,ref=$('eItem').value,st=type==='Received at WL/BZA'?'':$('eSt').value,qty=$('eQty').value;
+  if(!$('eDate').value||!ref||!(+qty>0)||(type!=='Received at WL/BZA'&&!st)){res.textContent='Fill date, item, station (if not a receipt) and a quantity above 0.';res.style.color='var(--r)';return}
+  localStorage.setItem('ePin',$('ePin').value);
+  if(!confirm(`Post to Google Sheet?\n${type}\n${ref}${st?' -> '+st:''}\nQty ${qty}`))return;
+  res.textContent='Posting...'; $('eGo').disabled=true;
+  const cb='eCb'+(++_jp),p=new URLSearchParams({callback:cb,pin:$('ePin').value,date:$('eDate').value,type,ref,station:st,qty,remarks:$('eRem').value});
+  const sc=document.createElement('script'),done=()=>{$('eGo').disabled=false;sc.remove();delete window[cb]};
+  const t=setTimeout(()=>{done();res.textContent='No reply from the Sheet script - check the Web app URL / deployment.';res.style.color='var(--r)'},30000);
+  window[cb]=o=>{clearTimeout(t);done();
+    if(o.ok){res.textContent='Posted in Data Entry row '+o.row+(o.check?' - check: '+o.check:' - OK');res.style.color=o.check?'#b26a00':'var(--g)';$('eQty').value='';$('eRem').value='';setTimeout(load,2500)}
+    else{res.textContent='NOT posted: '+o.error;res.style.color='var(--r)'}};
+  sc.onerror=()=>{clearTimeout(t);done();res.textContent='Could not reach the Web app URL.';res.style.color='var(--r)'};
+  sc.src=CFG.ENTRY_URL+(CFG.ENTRY_URL.includes('?')?'&':'?')+p; document.head.appendChild(sc);
+};
+</script>
+</body>
+</html>
