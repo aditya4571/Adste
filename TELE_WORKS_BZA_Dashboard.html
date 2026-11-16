@@ -3,126 +3,317 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#0b2545">
 <title>TELE WORKS BZA - Materials Monitor</title>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
-:root{--navy:#1f3864;--ink:#1d2433;--mut:#6b7385;--line:#e4e8f0;--bg:#f3f5f9;--card:#fff;
---g:#2e9e5b;--o:#e8833a;--b:#2f7dd1;--t:#1aa7a0;--r:#c0392b;--gr:#8c8c8c;--rad:12px}
+:root{--ink:#14213a;--mut:#5b6b82;--line:#dde4ee;--bg:#eff3f8;--card:#fff;--navy:#0b2545;--navy2:#143a6b;--amber:#f5b301;--tint:#eaf1fb;--edge:#9aaac1;
+--g:#1f9d55;--o:#f08a24;--b:#2f6fde;--t:#0e9f9e;--r:#d64545;--gr:#a9b3c2;
+--disp:"Barlow Condensed","Arial Narrow",Arial,sans-serif;--body:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;
+--sh:0 1px 2px rgba(11,37,69,.06),0 8px 24px rgba(11,37,69,.06)}
 *{box-sizing:border-box;margin:0;padding:0}
-body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;background:var(--bg);color:var(--ink);line-height:1.45;font-size:14px}
-a{color:var(--b);text-decoration:none}
-.wrap{max-width:1320px;margin:0 auto;padding:14px}
-header{background:linear-gradient(120deg,#1f3864,#2f5597);color:#fff;border-radius:var(--rad);padding:18px 22px;display:flex;flex-wrap:wrap;gap:12px;align-items:center;justify-content:space-between}
-header h1{font-size:20px;letter-spacing:.3px}
-header .sub{font-size:12px;opacity:.8;margin-top:2px}
+html{scroll-behavior:smooth}
+body{font-family:var(--body);background:var(--bg);color:var(--ink);line-height:1.5;font-size:14px;font-variant-numeric:tabular-nums;-webkit-font-smoothing:antialiased}
+a{color:var(--b);text-underline-offset:2px}
+button,select,input{font:inherit;color:inherit}
+:focus-visible{outline:3px solid rgba(47,111,222,.55);outline-offset:2px}
+.wrap{max-width:1240px;margin:0 auto;padding:0 18px 24px}
+
+/* header */
+header{background:linear-gradient(115deg,#0a2140 0%,#143a6b 60%,#1d4f91 100%);color:#fff}
+header::after{content:"";display:block;height:5px;background:linear-gradient(90deg,var(--g) 0 33.3%,var(--amber) 33.3% 66.6%,var(--r) 66.6%)}
+.plate{max-width:1240px;margin:0 auto;padding:14px 18px 12px;display:flex;flex-wrap:wrap;gap:8px 18px;align-items:center;justify-content:space-between}
+header h1{font-family:var(--disp);font-weight:700;font-size:clamp(28px,4.4vw,40px);line-height:1;letter-spacing:.01em}
+header .sub{font-size:12.5px;color:#bccce6;margin-top:5px}
 .hb{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
-button,select,input{font:inherit}
-.btn{background:rgba(255,255,255,.16);color:#fff;border:1px solid rgba(255,255,255,.35);border-radius:8px;padding:7px 12px;cursor:pointer;font-size:13px}
-.btn:hover{background:rgba(255,255,255,.28)}
-.stamp{font-size:12px;opacity:.85}
-.bar{display:flex;flex-wrap:wrap;gap:10px;margin:14px 0 0;align-items:center}
-.bar label{font-size:12px;color:var(--mut)}
-.bar select,.bar input{padding:7px 10px;border:1px solid var(--line);border-radius:8px;background:#fff;min-width:130px}
-#msg{margin-top:12px;padding:10px 14px;border-radius:10px;display:none;font-size:13px}
-#msg.err{display:block;background:#fdecea;color:#8a1f17;border:1px solid #f5c6c2}
-#msg.ok{display:block;background:#e8f5ee;color:#1d6b3f;border:1px solid #bfe3cf}
-.kpis{display:grid;grid-template-columns:repeat(6,1fr);gap:12px;margin:14px 0}
-.kpi{background:var(--card);border-radius:var(--rad);padding:14px 16px;border-top:4px solid var(--c);box-shadow:0 1px 3px rgba(20,30,60,.07)}
-.kpi .l{font-size:11px;text-transform:uppercase;letter-spacing:.6px;color:var(--mut)}
-.kpi .v{font-size:26px;font-weight:700;color:var(--c);margin:2px 0}
-.kpi .s{font-size:12px;color:var(--mut)}
-.grid{display:grid;gap:12px;margin-bottom:12px}
-.g2{grid-template-columns:1.25fr 1fr}
-.g3{grid-template-columns:1fr 1fr 1fr}
-.card{background:var(--card);border-radius:var(--rad);padding:16px 18px;box-shadow:0 1px 3px rgba(20,30,60,.07);min-width:0}
-.card h2{font-size:14px;color:var(--navy);margin-bottom:10px;display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap}
-.card h2 small{font-weight:400;color:var(--mut);font-size:12px}
-.ch{position:relative;height:300px}
+.live{display:inline-flex;align-items:center;gap:7px;font-size:12px;color:#bccce6}
+.live::before{content:"";width:8px;height:8px;border-radius:50%;background:#43d17a;box-shadow:0 0 0 0 rgba(67,209,122,.6);animation:pulse 2.4s infinite}
+@keyframes pulse{70%{box-shadow:0 0 0 7px rgba(67,209,122,0)}100%{box-shadow:0 0 0 0 rgba(67,209,122,0)}}
+.btn{display:inline-flex;align-items:center;gap:6px;background:#fff;color:var(--navy2);border:1.5px solid var(--navy2);border-radius:9px;padding:6px 13px;cursor:pointer;font-size:13px;font-weight:600;text-decoration:none;transition:background .12s,color .12s}
+.btn:hover{background:var(--navy2);color:#fff}
+.hb .btn{background:transparent;color:#fff;border-color:rgba(255,255,255,.45)}
+.hb .btn:hover{background:#fff;color:var(--navy)}
+.btn.pri{background:var(--g);border-color:var(--g);color:#fff}
+.btn.pri:hover{background:#17803f;border-color:#17803f}
+
+/* nav */
+nav{position:sticky;top:0;z-index:40;background:#081c36}
+.navin{max-width:1240px;margin:0 auto;padding:0 18px;display:flex;gap:4px}
+nav a{display:flex;align-items:center;gap:8px;color:#aebfdb;text-decoration:none;font-family:var(--disp);font-size:19px;font-weight:600;padding:10px 18px 8px;border-bottom:4px solid transparent;white-space:nowrap;transition:color .12s}
+nav a:hover{color:#fff}
+nav a.on{color:#fff;border-bottom-color:var(--amber)}
+nav a.add{margin-left:auto;background:var(--amber);color:#1b2330;border-radius:10px 10px 0 0;border-bottom-color:var(--amber)}
+nav a.add.on{background:#ffd24d;border-bottom-color:#ffd24d}
+nav svg{display:none;width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+
+/* filters */
+.bar{display:flex;flex-wrap:wrap;gap:12px;margin:18px 0 0;align-items:flex-end}
+.bar label{font-size:12px;font-weight:600;color:var(--mut)}
+.bar select,.bar input{padding:8px 11px;border:1.5px solid var(--edge);border-radius:9px;background:#fff;min-width:140px;margin-top:3px}
+#msg{margin-top:14px;padding:10px 14px;border-radius:9px;display:none;font-size:13px;border-left:6px solid}
+#msg.err{display:block;background:#fbe3e0;color:#7d1d14;border-color:var(--r)}
+#msg.ok{display:block;background:#dff1e6;color:#145c34;border-color:var(--g)}
+.view{display:none;padding-top:18px}.view.on{display:block}
+
+/* hero */
+.hero{display:grid;grid-template-columns:1fr 300px;background:linear-gradient(135deg,#0b2545,#12335f);color:#fff;border-radius:18px;box-shadow:var(--sh);overflow:hidden;margin-bottom:18px}
+.hero-main{padding:20px 24px 18px}
+.hero-h{display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 14px;margin-bottom:14px}
+.hero-h h2{font-family:var(--disp);font-size:26px;font-weight:600}
+.hero-h span{font-size:12.5px;color:#a9bddc}
+.flow{display:flex;gap:4px;height:50px}
+.f{display:flex;align-items:center;justify-content:center;border-radius:10px;min-width:6px;font-family:var(--disp);font-size:22px;font-weight:600}
+.f-iss{background:var(--g)}.f-sto{background:var(--t)}
+.f-pen{background:repeating-linear-gradient(135deg,#5b7194 0 6px,#6a80a3 6px 12px);color:#fff}
+.legs{display:flex;flex-wrap:wrap;gap:10px 26px;margin-top:14px}
+.lg{display:flex;gap:10px;align-items:flex-start}
+.lg .d{width:12px;height:12px;border-radius:4px;margin-top:5px;flex:none}
+.d-iss{background:var(--g)}.d-sto{background:var(--t)}.d-pen{background:#6a80a3}
+.lg b{display:block;font-family:var(--disp);font-size:24px;font-weight:600;line-height:1.1}
+.lg span{font-size:12px;color:#a9bddc}
+.hero-note{margin-top:14px;font-size:12.5px;color:#a9bddc;border-top:1px solid rgba(255,255,255,.12);padding-top:10px}
+.hero-note b{color:#fff}
+.hero-side{background:rgba(255,255,255,.06);display:flex;align-items:center;gap:16px;padding:20px 22px;border-left:1px solid rgba(255,255,255,.1)}
+.ring{position:relative;width:92px;height:92px;flex:none}
+.ring svg{width:100%;height:100%}
+.ring circle{fill:none;stroke-width:9}
+.ring .r0{stroke:rgba(255,255,255,.14)}.ring .r1{stroke:#5b9bff;stroke-linecap:round}
+.rv{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-family:var(--disp);font-size:21px;font-weight:600}
+.rt{display:flex;flex-direction:column;gap:2px;min-width:0}
+.rt b{font-family:var(--disp);font-size:20px;font-weight:600}
+.rt span{font-size:12px;color:#a9bddc}
+.alert{margin-top:10px;display:inline-block;font-size:12px;font-weight:600;padding:4px 10px;border-radius:999px;border:0;color:#fff;width:fit-content}
+.alert.ok{background:rgba(31,157,85,.3);color:#9df0bd}
+.alert.bad{background:var(--r);cursor:pointer}
+.sk{height:150px;background:linear-gradient(90deg,#12335f 25%,#1a4274 37%,#12335f 63%);background-size:400% 100%;animation:shim 1.3s ease infinite;border-radius:18px;margin-bottom:18px}
+@keyframes shim{0%{background-position:100% 50%}100%{background-position:0 50%}}
+
+.grid{display:grid;gap:18px;margin-bottom:18px}
+.g2{grid-template-columns:1fr 1fr}
+.card{background:var(--card);border-radius:16px;padding:18px 20px 20px;min-width:0;box-shadow:var(--sh);margin-bottom:18px}
+.grid .card{margin-bottom:0}
+.card h2{font-family:var(--disp);font-size:23px;font-weight:600;color:var(--navy);margin-bottom:12px;display:flex;align-items:baseline;gap:6px 12px;flex-wrap:wrap}
+.card h2 small{font-family:var(--body);font-weight:400;color:var(--mut);font-size:12.5px}
+.card h2 input{font-size:13px;font-weight:400;padding:7px 11px;width:min(340px,100%);margin-left:auto;border:1.5px solid var(--edge);border-radius:9px;background:#fff}
+.ch{position:relative;height:320px}
 .tw{overflow-x:auto}
-table{border-collapse:collapse;width:100%;font-size:13px}
-th{background:#eef2fa;color:var(--navy);text-align:left;padding:8px 10px;font-size:12px;white-space:nowrap;position:sticky;top:0;cursor:pointer;user-select:none}
+
+/* tables */
+table{border-collapse:separate;border-spacing:0;width:100%;font-size:13px}
+th{background:#eaf0f8;color:var(--navy2);text-align:left;padding:9px 12px;font-size:12px;font-weight:600;white-space:nowrap;position:sticky;top:0;z-index:1;cursor:pointer;user-select:none;border-bottom:2px solid #cfd9e8}
+th:hover{color:var(--b)}
 th.n,td.n{text-align:right}
-td{padding:7px 10px;border-bottom:1px solid var(--line);vertical-align:middle}
-tr:hover td{background:#f8faff}
+td{padding:9px 12px;border-bottom:1px solid var(--line);vertical-align:middle}
+tr:hover td{background:#f5f8fd}
 tr.click{cursor:pointer}
-.pb{position:relative;background:#edf0f6;border-radius:6px;height:18px;min-width:90px}
-.pb i{position:absolute;left:0;top:0;bottom:0;border-radius:6px;background:var(--c,#2f7dd1);opacity:.85}
-.pb span{position:relative;font-size:11px;font-weight:600;padding-left:6px;line-height:18px;color:#13203a}
-.chip{display:inline-block;padding:2px 8px;border-radius:999px;font-size:11px;font-weight:600;white-space:nowrap}
-.c-red{background:#fdecea;color:#a4281c}.c-amb{background:#fff4d6;color:#8a6100}.c-grn{background:#e3f4ea;color:#1d6b3f}.c-gry{background:#eceff5;color:#4a5368}.c-blu{background:#e5eefb;color:#1d4f9a}
-.scroll{max-height:560px;overflow:auto;border:1px solid var(--line);border-radius:8px}
-.pg{display:flex;gap:8px;justify-content:flex-end;align-items:center;margin-top:8px;font-size:12px;color:var(--mut)}
-.pg button{border:1px solid var(--line);background:#fff;border-radius:6px;padding:4px 10px;cursor:pointer}
-.pg button:disabled{opacity:.4;cursor:default}
-#detail{display:none;border:2px solid var(--b);border-radius:10px;padding:12px;margin-bottom:12px;background:#f8fbff}
-.foot{text-align:center;color:var(--mut);font-size:12px;padding:14px 0 24px}
-@media(max-width:1000px){.kpis{grid-template-columns:repeat(3,1fr)}.g2,.g3{grid-template-columns:1fr}}
-@media(max-width:560px){.kpis{grid-template-columns:repeat(2,1fr)}.kpi .v{font-size:22px}.wrap{padding:8px}header{padding:14px}}
-@media print{.bar,.btn,.pg{display:none}body{background:#fff}}
+tr.click:hover td{background:var(--tint)}
+tr.tot td{background:#f5f8fc;border-top:2px solid #cfd9e8}
+.pb{position:relative;background:#e4eaf3;height:20px;min-width:110px;border-radius:6px;overflow:hidden}
+.pb i{position:absolute;left:0;top:0;bottom:0;background:var(--c,#2f6fde);border-radius:6px}
+.pb span{position:relative;font-size:11.5px;font-weight:600;line-height:20px;padding:0 8px;color:var(--ink);display:block;text-shadow:0 0 4px #fff,0 0 4px #fff}
+.chip{display:inline-flex;align-items:center;gap:6px;padding:2px 9px 2px 7px;border-radius:999px;font-size:11.5px;font-weight:600;white-space:nowrap}
+.chip::before{content:"";width:7px;height:7px;border-radius:50%;background:currentColor}
+.c-red{background:#fde7e5;color:#a42d22}.c-amb{background:#fdeed6;color:#8f4e08}.c-grn{background:#def3e6;color:#16703d}.c-gry{background:#eaeef3;color:#475467}.c-blu{background:#e3ecfb;color:#244a8a}
+.scroll{max-height:64vh;overflow:auto;border:1px solid var(--line);border-radius:12px}
+.pg{display:flex;gap:8px;justify-content:flex-end;align-items:center;margin-top:10px;font-size:12.5px;color:var(--mut)}
+.pg button{border:1.5px solid var(--navy2);background:#fff;color:var(--navy2);border-radius:8px;padding:4px 14px;cursor:pointer;font-weight:600}
+.pg button:hover:not(:disabled){background:var(--navy2);color:#fff}
+.pg button:disabled{opacity:.35;cursor:default}
+#detail{display:none;border:1.5px solid var(--navy2);border-left:8px solid var(--amber);border-radius:12px;padding:14px 16px;margin-bottom:16px;background:#f9fbff}
+#detail h2{font-size:22px}
+#detail h2 input[type=text],#detail h2 input:not([type]){margin-left:6px}
+#searchNote{margin:4px 0 10px;padding:8px 12px;background:#fff7dc;font-size:13px;border-left:4px solid var(--amber);border-radius:6px}
+.hint{font-size:12px;color:var(--mut);margin-top:8px}
+
+/* form */
+.formcard{max-width:860px;margin:0 auto 18px}
+#eNote{display:none;background:#fbe3e0;border-left:6px solid var(--r);color:#7d1d14;padding:9px 12px;margin-bottom:14px;font-size:13px;border-radius:6px}
+.fg{display:grid;grid-template-columns:repeat(6,1fr);gap:16px}
+.fg label{font-size:12px;font-weight:600;color:var(--mut);display:block}
+.fg select,.fg input,#eUrl{width:100%;padding:10px 11px;border:1.5px solid var(--edge);border-radius:9px;background:#fff;margin-top:4px;font-size:14px;color:var(--ink)}
+.bar select:focus,.bar input:focus,.fg select:focus,.fg input:focus,.card h2 input:focus,#eUrl:focus{border-color:var(--b);outline:0;box-shadow:0 0 0 3px rgba(47,111,222,.2)}
+.fg select:disabled{background:#eef1f5;color:var(--mut);border-color:#cfd6e0}
+.s6{grid-column:span 6}.s3{grid-column:span 3}.s2{grid-column:span 2}
+.seg{display:flex;gap:6px;margin-top:4px}
+.seg button{flex:1;background:#fff;border:1.5px solid var(--edge);border-radius:10px;padding:11px 8px;cursor:pointer;font-weight:600;font-size:14px;transition:all .12s}
+.seg button:hover{border-color:var(--navy2)}
+.seg button.on{background:var(--navy2);border-color:var(--navy2);color:#fff;box-shadow:0 3px 10px rgba(20,58,107,.3)}
+#eType{display:none}
+#eInfo{background:#0b2545;color:#dfe8f6;padding:10px 14px;font-size:13px;min-height:42px;border-left:6px solid var(--amber);border-radius:9px}
+#eInfo:empty::before{content:"Item and station figures appear here";color:#7f95b8}
+.go{display:flex;gap:14px;align-items:center;flex-wrap:wrap}
+#eGo{background:var(--g);border-color:var(--g);color:#fff;font-size:15px;padding:10px 28px;border-radius:10px}
+#eGo:hover{background:#17803f;border-color:#17803f}
+#eGo:disabled{opacity:.5;cursor:default}
+#eRes{font-weight:600}
+
+/* dialog + toast */
+dialog{border:0;border-radius:16px;padding:0;box-shadow:0 20px 60px rgba(8,28,54,.4);max-width:min(440px,92vw);width:100%;margin:auto}
+dialog::backdrop{background:rgba(8,28,54,.55);backdrop-filter:blur(2px)}
+dialog form{padding:22px}
+dialog h3{font-family:var(--disp);font-size:26px;font-weight:600;color:var(--navy);margin-bottom:12px}
+dl{display:grid;grid-template-columns:92px 1fr;gap:8px 12px;font-size:14px;margin-bottom:20px}
+dt{color:var(--mut)}dd{font-weight:500}
+.dlg-act{display:flex;gap:10px;justify-content:flex-end}
+#toast{position:fixed;left:50%;bottom:28px;transform:translate(-50%,30px);background:#0b2545;color:#fff;padding:12px 20px;border-radius:12px;box-shadow:0 10px 30px rgba(8,28,54,.35);font-weight:500;opacity:0;pointer-events:none;transition:all .25s;z-index:100;max-width:92vw;border-left:6px solid var(--g)}
+#toast.show{opacity:1;transform:translate(-50%,0)}
+#toast.warn{border-left-color:var(--amber)}
+
+.foot{text-align:center;color:var(--mut);font-size:12px;padding:6px 0 20px}
+@media(max-width:1000px){.hero{grid-template-columns:1fr}.hero-side{border-left:0;border-top:1px solid rgba(255,255,255,.1)}.g2{grid-template-columns:1fr}}
+@media(max-width:640px){
+ body{padding-bottom:74px}
+ .wrap,.plate,.navin{padding-left:12px;padding-right:12px}
+ .plate{padding-top:12px}
+ nav{position:fixed;top:auto;bottom:0;left:0;right:0;border-top:1px solid #1b3a63;box-shadow:0 -6px 20px rgba(8,28,54,.25)}
+ .navin{padding:0;gap:0;justify-content:space-around}
+ nav a{flex:1;flex-direction:column;gap:2px;font-family:var(--body);font-size:11.5px;font-weight:600;padding:9px 2px 8px;border-bottom:0;border-top:3px solid transparent;justify-content:center}
+ nav a.on{border-top-color:var(--amber)}
+ nav a.add{margin:6px 8px;border-radius:12px;border:0;flex:1.2;padding:6px 2px}
+ nav svg{display:block}
+ .hero-main{padding:16px}.f{font-size:18px}.flow{height:44px}.lg b{font-size:21px}
+ .hero-side{padding:16px}
+ .card{padding:14px 14px 16px;border-radius:14px}
+ .card h2 input{margin-left:0;width:100%}
+ .ch{height:280px}
+ .s3,.s2{grid-column:span 6}.s3.half{grid-column:span 3}
+ .seg{flex-direction:column}
+ #toast{bottom:90px}
+}
+@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important;scroll-behavior:auto!important}}
+@media print{nav,.bar,.btn,.pg{display:none}body{background:#fff}}
+
+/* reports */
+.rtool{background:#f5f8fc;border:1px solid var(--line);border-radius:12px;padding:14px;margin-bottom:14px;display:grid;gap:12px}
+.rrow{display:flex;flex-wrap:wrap;gap:12px;align-items:flex-end}
+.rf label{font-size:12px;font-weight:600;color:var(--mut);display:block}
+.rf select,.rf input{padding:8px 11px;border:1.5px solid var(--edge);border-radius:9px;background:#fff;min-width:140px;margin-top:3px;display:block}
+.rf.grow{flex:1;min-width:220px}.rf.grow input{width:100%}
+.rf select:focus,.rf input:focus{border-color:var(--b);outline:0;box-shadow:0 0 0 3px rgba(47,111,222,.2)}
+.seg2,.chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:3px}
+.seg2 button,.chips button{background:#fff;border:1.5px solid var(--edge);border-radius:999px;padding:6px 14px;cursor:pointer;font-weight:600;font-size:13px;transition:all .12s}
+.seg2 button:hover,.chips button:hover{border-color:var(--navy2)}
+.seg2 button.on,.chips button.on{background:var(--navy2);border-color:var(--navy2);color:#fff}
+.rsum{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:14px}
+.rs{background:#fff;border:1px solid var(--line);border-left:5px solid var(--b);border-radius:10px;padding:10px 14px}
+.rs b{display:block;font-family:var(--disp);font-size:28px;font-weight:600;line-height:1.1;color:var(--navy)}
+.rs span{font-size:12px;color:var(--mut)}
+.rs:nth-child(2){border-left-color:var(--t)}.rs:nth-child(3){border-left-color:var(--o)}.rs:nth-child(4){border-left-color:var(--g)}
+.empty{padding:28px 12px;text-align:center;color:var(--mut)}
+.rdh{display:flex;flex-wrap:wrap;gap:8px 14px;align-items:center;justify-content:space-between;margin-bottom:10px}
+@media(max-width:1000px){.rsum{grid-template-columns:repeat(2,1fr)}}
+@media print{.rtool,#rDetail .btn{display:none}}
 </style>
 </head>
 <body>
-<div class="wrap">
 <header>
-  <div><h1>TELE WORKS BZA - Materials Monitor</h1><div class="sub">WL/BZA store, Vijayawada Division &middot; contractor supply, issue to stations and installation</div></div>
-  <div class="hb"><span class="stamp" id="stamp">Loading...</span><button class="btn" id="refresh">Refresh</button><a class="btn" id="open" target="_blank" rel="noopener">Open Google Sheet</a></div>
+ <div class="plate">
+  <div><h1>Tele Works BZA</h1><div class="sub">Materials monitor &middot; WL/BZA store, Vijayawada Division</div></div>
+  <div class="hb"><span class="live" id="stamp">Loading...</span><button class="btn" id="refresh">Refresh</button><a class="btn" id="open" target="_blank" rel="noopener">Google Sheet</a></div>
+ </div>
 </header>
+<nav aria-label="Pages"><div class="navin">
+  <a href="#overview" data-nav="overview"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 13h6V4H4zM14 20h6V11h-6zM14 4v4h6V4zM4 20h6v-4H4z"/></svg>Overview</a>
+  <a href="#stations" data-nav="stations"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21s7-6.2 7-11a7 7 0 10-14 0c0 4.8 7 11 7 11z"/><circle cx="12" cy="10" r="2.5"/></svg>Stations</a>
+  <a href="#items" data-nav="items"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 6h12M8 12h12M8 18h12M4 6h.01M4 12h.01M4 18h.01"/></svg>Items</a>
+  <a href="#reports" data-nav="reports"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 20V10M12 20V4M19 20v-7"/></svg>Reports</a>
+  <a href="#add" data-nav="add" class="add"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>Add entry</a>
+</div></nav>
+<div class="wrap">
 <div id="msg"></div>
-<div class="bar">
+<div class="bar" id="filters">
   <div><label>Contract<br><select id="fCon"></select></label></div>
   <div><label>Item status<br><select id="fSta"></select></label></div>
   <div><label>Item type<br><select id="fTyp"></select></label></div>
-  <div style="flex:1;min-width:180px"><label>Search items<br><input id="fQ" placeholder="type any part of an item name - with the filters above" style="width:100%"></label></div>
+  <div style="flex:1;min-width:200px"><label>Search items<br><input id="fQ" placeholder="any part of an item name" style="width:100%"></label></div>
 </div>
-<section class="kpis" id="kpis"></section>
-<div class="grid g2">
-  <div class="card"><h2>Progress by contract <small>share of supply / installation value</small></h2><div class="ch"><canvas id="cProg"></canvas></div></div>
-  <div class="card"><h2>Status of items <small id="stN"></small></h2><div class="ch"><canvas id="cSta"></canvas></div></div>
-</div>
-<div class="grid g2">
-  <div class="card"><h2>Where the supply value sits <small>Rs lakh</small></h2><div class="ch"><canvas id="cVal"></canvas></div></div>
-  <div class="card"><h2>Contract summary</h2><div class="tw"><table id="tCon"></table></div></div>
-</div>
-<div class="card" style="margin-bottom:12px">
-  <h2>All stations <small id="stCount"></small>
-    <input id="fS" placeholder="type a station name - items, issued &amp; installed show below" style="padding:6px 10px;border:1px solid var(--line);border-radius:8px"></h2>
-  <div id="detail"></div>
-  <div class="scroll"><table id="tSt"></table></div>
-  <div style="font-size:12px;color:var(--mut);margin-top:6px">Click a station to see its items. Click a column heading to sort.</div>
-</div>
-<div class="card" style="margin-bottom:12px">
-  <h2>Items <small id="itN"></small></h2>
-  <div class="tw scroll"><table id="tIt"></table></div>
-  <div class="pg"><span id="pgInfo"></span><button id="pgP">Prev</button><button id="pgN">Next</button></div>
-</div>
-<div class="card" style="margin-bottom:12px" id="entryCard">
-  <h2>Add entry <small>posts straight into the Google Sheet (Data Entry log)</small> <button class="btn" id="eTog" style="background:var(--navy);color:#fff;margin-left:8px">Show form</button></h2>
-  <div id="eBox" style="display:none">
-    <div id="eNote" style="color:var(--r);margin-bottom:8px"></div>
-    <div class="bar" style="flex-wrap:wrap;align-items:flex-end">
-      <div><label>Date<br><input type="date" id="eDate"></label></div>
-      <div><label>Entry type<br><select id="eType"><option>Received at WL/BZA</option><option>Issued to station</option><option>Installed at station</option></select></label></div>
-      <div><label>Contract<br><select id="eCon"></select></label></div>
-      <div style="flex:1;min-width:160px"><label>Search item<br><input id="eQ" placeholder="part of item name" style="width:100%"></label></div>
-    </div>
-    <div class="bar" style="flex-wrap:wrap;align-items:flex-end">
-      <div style="flex:2;min-width:260px"><label>Item<br><select id="eItem" style="width:100%"></select></label></div>
-      <div><label>Station<br><select id="eSt"></select></label></div>
-      <div><label>Quantity<br><input type="number" id="eQty" min="0" step="any" style="width:100px"></label></div>
-      <div><label>Remarks<br><input id="eRem" style="width:160px"></label></div>
-      <div><label>PIN<br><input type="password" id="ePin" style="width:100px"></label></div>
-      <div><button class="btn" id="eGo" style="background:var(--g);color:#fff">Submit entry</button></div>
-    </div>
-    <div id="eInfo" style="font-size:13px;margin:6px 0;color:var(--mut)"></div>
-    <div id="eRes" style="font-weight:600"></div>
+
+<main>
+<section class="view" id="v-overview">
+  <section id="kpis"><div class="sk"></div></section>
+  <div class="card"><h2>Contracts <small>received, issued and installed as a share of value &middot; click a contract to see its items</small></h2><div class="tw"><table id="tCon"></table></div></div>
+  <div class="grid g2">
+    <div class="card"><h2>Status of items <small id="stN"></small></h2><div class="ch"><canvas id="cSta"></canvas></div></div>
+    <div class="card"><h2>Where the supply value sits <small>Rs lakh</small></h2><div class="ch"><canvas id="cVal"></canvas></div></div>
   </div>
-</div>
-<div class="card">
-  <h2>Latest entries <small>from the Entry Register sheet, newest first</small></h2>
-  <div class="tw"><table id="tEn"></table></div>
-</div>
+</section>
+
+<section class="view" id="v-stations">
+  <div class="card">
+    <h2>Stations <small id="stCount"></small>
+      <input id="fS" placeholder="type a station name to see its items"></h2>
+    <div id="detail"></div>
+    <div class="scroll"><table id="tSt"></table></div>
+    <div class="hint">Click a station to see its items: allotted, issued and installed. Click a column heading to sort.</div>
+  </div>
+</section>
+
+<section class="view" id="v-items">
+  <div class="card">
+    <h2>Items <small id="itN"></small></h2>
+    <div class="tw scroll"><table id="tIt"></table></div>
+    <div class="pg"><span id="pgInfo"></span><button id="pgP">Prev</button><button id="pgN">Next</button></div>
+  </div>
+</section>
+
+<section class="view" id="v-reports">
+  <div class="card">
+    <h2>Reports <small>from the Data Entry log: what was issued, received or installed, by work and by station</small></h2>
+    <div class="rtool">
+      <div class="rrow">
+        <div class="rf"><label>Group by</label><div class="seg2" id="rGrp"><button type="button" class="on" data-g="work">Work-wise</button><button type="button" data-g="station">Station-wise</button><button type="button" data-g="both">Work &times; Station</button></div></div>
+        <div class="rf"><label>Entry type<select id="rType"><option value="">All entries</option><option value="Issued to station" selected>Issued to station</option><option value="Received at WL/BZA">Received at store</option><option value="Installed at station">Installed at station</option></select></label></div>
+        <div class="rf"><label>Work<select id="rCon"></select></label></div>
+        <div class="rf grow"><label>Find station or item<input id="rQ" placeholder="part of a station or item name"></label></div>
+      </div>
+      <div class="rrow">
+        <div class="rf"><label>From<input type="date" id="rFrom"></label></div>
+        <div class="rf"><label>To<input type="date" id="rTo"></label></div>
+        <div class="rf grow"><label>Period</label><div class="chips" id="rPre"><button type="button" data-p="m0">This month</button><button type="button" data-p="m1">Last month</button><button type="button" data-p="d30">Last 30 days</button><button type="button" data-p="fy">This financial year</button><button type="button" data-p="all" class="on">All time</button></div></div>
+      </div>
+    </div>
+    <div class="rsum" id="rSum"></div>
+    <div class="tw scroll" id="rWrap"><table id="tRep"></table></div>
+    <div class="rdh" style="margin-top:10px"><div class="hint" id="rHint" style="margin:0">Click a row to list its entries. Value is quantity multiplied by the contract rate.</div><div><button class="btn" id="rCsv" type="button">Download all as CSV</button> <button class="btn" type="button" onclick="window.print()">Print</button></div></div>
+  </div>
+  <div class="card" id="rDetail" style="display:none"></div>
+</section>
+
+<section class="view" id="v-add">
+  <div class="card formcard" id="entryCard">
+    <h2>Add entry <small>saved straight into the Data Entry log of the Google Sheet</small></h2>
+    <div id="eNote"></div>
+    <div id="eUrlBox" style="display:none;margin-bottom:14px"><label style="font-size:12px;font-weight:600;color:var(--mut);display:block">Web app URL (from Apps Script &gt; Deploy, ends with /exec)</label><div style="display:flex;gap:8px;margin-top:3px"><input id="eUrl" placeholder="https://script.google.com/macros/s/.../exec" style="flex:1;margin-top:0"><button class="btn" id="eUrlSave" type="button">Save URL</button></div><div class="hint">Saved in this browser only. To make it permanent for everyone, paste it into ENTRY_URL at the top of this file.</div></div>
+    <div class="fg">
+      <div class="s6"><label>What happened</label>
+        <div class="seg"><button type="button" class="on" data-v="Received at WL/BZA">Received at store</button><button type="button" data-v="Issued to station">Issued to station</button><button type="button" data-v="Installed at station">Installed at station</button></div>
+        <select id="eType" tabindex="-1" aria-hidden="true"><option>Received at WL/BZA</option><option>Issued to station</option><option>Installed at station</option></select></div>
+      <div class="s2"><label>Date<input type="date" id="eDate"></label></div>
+      <div class="s2"><label>Contract<select id="eCon"></select></label></div>
+      <div class="s2"><label>Find item<input id="eQ" placeholder="part of item name"></label></div>
+      <div class="s6"><label>Item<select id="eItem"></select></label></div>
+      <div class="s3"><label>Station<select id="eSt"></select></label></div>
+      <div class="s3 half"><label>Quantity<input type="number" id="eQty" min="0" step="any" inputmode="decimal"></label></div>
+      <div class="s6"><div id="eInfo"></div></div>
+      <div class="s3"><label>Remarks (optional)<input id="eRem" placeholder="challan no., vehicle..."></label></div>
+      <div class="s3 half"><label>PIN<input type="password" id="ePin" autocomplete="off" inputmode="numeric"></label></div>
+      <div class="s6 go"><button class="btn" id="eGo" type="button">Review and save</button><span id="eRes" role="status"></span></div>
+    </div>
+  </div>
+  <div class="card">
+    <h2>Latest entries <small>from the Entry Register, newest first</small></h2>
+    <div class="tw"><table id="tEn"></table></div>
+  </div>
+</section>
+</main>
 <div class="foot">Data is read live from the Google Sheet; nothing is stored on this page. Rs L = Rs lakh, Rs Cr = Rs crore.</div>
 </div>
+
+<dialog id="cfm"><form method="dialog"><h3>Review entry</h3><dl id="cfmBody"></dl>
+  <div class="dlg-act"><button class="btn" value="cancel">Edit</button><button class="btn pri" value="ok" id="cfmOk" autofocus>Save to sheet</button></div></form></dialog>
+<div id="toast" role="status" aria-live="polite"></div>
 
 <script>
 /* ============ CONFIGURATION: change only this block ============ */
@@ -130,15 +321,16 @@ const CFG = {
   SHEET_ID: "1JLUJaOLOrFjbwFQ3OEVusKspOJ1gCMYnRIzKOCP2DaI",
   REFRESH_MINUTES: 5,
   PAGE_SIZE: 25,
-  ENTRY_URL: ""   /* paste the Apps Script Web app URL (ends /exec) to enable the Add entry form */
+  ENTRY_URL: "https://script.google.com/macros/s/AKfycbxcDxHSYGNdR3oY-IZQRNogVqYqCIzsYzDZlNd_Rjq1TWr3uSTm3pJMjn0DRtmlvnXS-w/exec"   /* paste the Apps Script Web app URL (ends /exec) to enable the Add entry form */
 };
 /* ================================================================ */
 const BASE = `https://docs.google.com/spreadsheets/d/${CFG.SHEET_ID}`;
 document.getElementById('open').href = BASE + '/edit';
 const $ = id => document.getElementById(id);
-const COL = {g:'#2e9e5b',o:'#e8833a',b:'#2f7dd1',t:'#1aa7a0',gr:'#b9bfcc',r:'#c0392b'};
+const COL = {g:'#1f9d55',o:'#f08a24',b:'#2f6fde',t:'#0e9f9e',gr:'#b3bcc9',r:'#d64545'};
 let S = {items:[],stations:[],entries:[],page:0,sortSt:{k:'allot',d:-1},detailFor:null};
 const charts = {};
+if(window.Chart){Chart.defaults.font.family='"IBM Plex Sans",system-ui,sans-serif';Chart.defaults.color='#16233b';Chart.defaults.borderColor='#e6ebf3'}
 
 /* ---------- data access ---------- */
 function parseCSV(t){
@@ -167,7 +359,7 @@ function sheet(name, range, tq){
       done();
       if(!resp || resp.status!=='ok'){ const m=(resp&&resp.errors&&resp.errors[0]&&(resp.errors[0].detailed_message||resp.errors[0].message))||'query error'; return reject(new Error(name+': '+m)); }
       const t=resp.table, heads=t.cols.map((c,i)=>c.label||c.id||('c'+i));
-      const rows=t.rows.map(r=>Object.fromEntries(heads.map((h,i)=>{ const c=r.c[i]; return [h, c==null?'':(c.f!=null&&c.f!==''?String(c.f):(c.v==null?'':String(c.v)))] })));
+      const rows=t.rows.map(r=>{ const o=Object.fromEntries(heads.map((h,i)=>{ const c=r.c[i]; return [h, c==null?'':(c.f!=null&&c.f!==''?String(c.f):(c.v==null?'':String(c.v)))] })); Object.defineProperty(o,'_v',{value:r.c.map(c=>c?c.v:null)}); return o; });
       resolve(rows.filter(r=>Object.values(r).some(x=>x!=='')));
     };
     sc.onerror=()=>{ done(); reject(new Error(name+': could not reach docs.google.com (or the sheet is not shared as "Anyone with the link")')) };
@@ -181,10 +373,11 @@ const pct = n => (n*100).toFixed(n>=.995||n===0?0:1)+'%';
 async function load(){
   $('stamp').textContent='Loading...';
   try{
-    const [it, st, en] = await Promise.all([
+    const [it, st, en, lg] = await Promise.all([
       sheet('Tracker','A4:AA649','select A,B,C,E,G,H,I,L,N,Q,R,S,AA'),
       sheet('Station Performance','A4:S67'),
-      sheet('Entry Register','A5:I60').catch(()=>[])
+      sheet('Entry Register','A5:I60').catch(()=>[]),
+      sheet('Data Entry','R5:AC1505','select R,S,T,U,V,Y,AA,AB,AC').catch(()=>[])
     ]);
     S.items = it.map(r=>({ref:r['Ref'],work:r['Contract / Work'],item:r['Item (standardised)'],type:r['Type'],qty:num(r['Contract Qty']),
       rec:num(r['Received at WL/BZA']),iss:num(r['Issued to Stations']),ins:num(r['Installed']),status:r['STATUS (auto)'],
@@ -192,10 +385,11 @@ async function load(){
     S.stations = st.map(r=>({name:r['Station / Location'],n:num(r['Items allotted']),allot:num(r['Supply allotted (Rs)']),iss:num(r['Issued (Rs)']),
       pi:num(r['% issued']),instAllot:num(r['Install allotted (Rs)']),inst:num(r['Installed (Rs)']),pn:num(r['% installed']),ov:num(r['OVERALL % (value)']),chk:num(r['CHECK flags'])}));
     S.entries = en;
+    S.log = lg.map(r=>{ const v=Object.values(r), raw=r._v||[]; return {d:pDate(raw[0],v[0]),type:v[1],con:v[2],item:v[3],st:v[4],qty:num(v[5]),rem:v[6],ref:v[7],chk:v[8]} }).filter(e=>e.d&&e.qty>0&&e.type&&e.con);
     if(!S.items.length) throw new Error('No rows came back from the Tracker sheet');
     $('msg').className=''; $('msg').style.display='none';
     $('stamp').textContent='Updated ' + new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});
-    buildFilters(); render();
+    buildFilters(); render(); onLoaded();
   }catch(e){
     $('msg').className='err';
     $('msg').innerHTML='<b>Could not read the Google Sheet.</b> '+e.message+'. Check that the sheet is shared as "Anyone with the link" (Viewer is enough) and the sheet ID in this page is correct. <a href="#" onclick="load();return false">Try again</a>';
@@ -232,20 +426,9 @@ const STAT_COL = s => /^CHECK/i.test(s)?'c-red':/Completed|Fully issued|Issued$/
 function render(){
   const list=filtered(true), A=agg(list);
   const chk=list.filter(i=>/^CHECK/i.test(i.status)).length + S.entries.filter(e=>e['Check']&&e['Check']!=='OK'&&e['Check']!=='Incomplete').length;
-  const k=[['Received at WL/BZA',pct(A.pr),'of Rs '+fmt(A.sv/1e7,2)+' Cr supply',COL.g],
-    ['Issued to stations',pct(A.pi),'Rs '+fmt(A.iss/1e7,2)+' Cr issued',COL.o],
-    ['Installation done',pct(A.pn),'of Rs '+fmt(A.iv/1e7,2)+' Cr work',COL.b],
-    ['Stock at WL/BZA','Rs '+fmt(A.stock/1e7,2)+' Cr','received, not yet issued',COL.t],
-    ['Pending from contractors','Rs '+fmt(A.pending/1e7,2)+' Cr','supply not yet received',COL.gr],
-    ['Entries to check',chk,list.length+' items in view',chk?COL.r:COL.g]];
-  $('kpis').innerHTML=k.map(x=>`<div class="kpi" style="--c:${x[3]}"><div class="l">${x[0]}</div><div class="v">${x[1]}</div><div class="s">${x[2]}</div></div>`).join('');
+    renderHero(A,list,chk);
 
   const cons=[...new Set(S.items.map(i=>i.con))], rows=cons.map(c=>({c,...agg(S.items.filter(i=>i.con===c))}));
-  chart('cProg',{type:'bar',data:{labels:cons,datasets:[
-    {label:'Received',data:rows.map(r=>+(r.pr*100).toFixed(1)),backgroundColor:COL.g},
-    {label:'Issued',data:rows.map(r=>+(r.pi*100).toFixed(1)),backgroundColor:COL.o},
-    {label:'Installed',data:rows.map(r=>+(r.pn*100).toFixed(1)),backgroundColor:COL.b}]},
-    options:{indexAxis:'y',maintainAspectRatio:false,scales:{x:{max:100,ticks:{callback:v=>v+'%'}}},plugins:{legend:{position:'bottom'}}}});
   chart('cVal',{type:'bar',data:{labels:cons,datasets:[
     {label:'Issued to stations',data:rows.map(r=>+(r.iss/1e5).toFixed(1)),backgroundColor:COL.b},
     {label:'Stock at WL/BZA',data:rows.map(r=>+(r.stock/1e5).toFixed(1)),backgroundColor:COL.t},
@@ -257,14 +440,37 @@ function render(){
   chart('cSta',{type:'doughnut',data:{labels:sl,datasets:[{data:sl.map(s=>sc[s]),backgroundColor:sl.map(s=>({'c-red':COL.r,'c-grn':COL.g,'c-amb':COL.o,'c-gry':COL.gr,'c-blu':COL.b})[STAT_COL(s)]),borderWidth:2,borderColor:'#fff'}]},
     options:{maintainAspectRatio:false,cutout:'58%',plugins:{legend:{position:'right'}}}});
 
-  $('tCon').innerHTML='<tr><th>Contract</th><th class="n">Supply Rs L</th><th class="n">Install Rs L</th><th class="n">Stock Rs L</th><th class="n">Pending Rs L</th></tr>'+
-    rows.map(r=>`<tr class="click" onclick="pickCon('${r.c}')"><td><b>${r.c}</b></td><td class="n">${fmt(r.sv/1e5)}</td><td class="n">${fmt(r.iv/1e5)}</td><td class="n">${fmt(r.stock/1e5)}</td><td class="n">${fmt(r.pending/1e5)}</td></tr>`).join('')+
-    `<tr><td><b>TOTAL</b></td>${['sv','iv','stock','pending'].map(f=>`<td class="n"><b>${fmt(rows.reduce((a,r)=>a+r[f],0)/1e5)}</b></td>`).join('')}</tr>`;
+  const TT=agg(S.items);
+  $('tCon').innerHTML='<tr><th>Contract</th><th>Received</th><th>Issued</th><th>Installed</th><th class="n">Stock Rs L</th><th class="n">Pending Rs L</th></tr>'+
+    rows.map(r=>`<tr class="click" onclick="pickCon('${r.c}')"><td><b>${r.c}</b></td><td>${bar(r.pr,COL.g)}</td><td>${bar(r.pi,COL.o)}</td><td>${bar(r.pn,COL.b)}</td><td class="n">${fmt(r.stock/1e5)}</td><td class="n">${fmt(r.pending/1e5)}</td></tr>`).join('')+
+    `<tr class="tot"><td><b>All contracts</b></td><td>${bar(TT.pr,COL.g)}</td><td>${bar(TT.pi,COL.o)}</td><td>${bar(TT.pn,COL.b)}</td><td class="n"><b>${fmt(TT.stock/1e5)}</b></td><td class="n"><b>${fmt(TT.pending/1e5)}</b></td></tr>`;
 
   renderStations(); renderItems(); renderEntries();
 }
+
+function renderHero(A,list,chk){
+  const iss=Math.max(0,A.iss),store=Math.max(0,A.stock),pend=Math.max(0,A.pending),tot=(iss+store+pend)||1;
+  const cr=v=>'Rs '+fmt(v/1e7,2)+' Cr', pc=v=>(v/tot*100);
+  const seg=(c,v,l)=>`<div class="f f-${c}" style="flex:${Math.max(v,tot*.004)}" title="${l}: ${cr(v)}">${pc(v)>=9?`<b>${fmt(pc(v),0)}%</b>`:''}</div>`;
+  const leg=(c,v,l)=>`<div class="lg"><i class="d d-${c}"></i><div><b>${cr(v)}</b><span>${l}</span></div></div>`;
+  const C=2*Math.PI*34, dash=Math.min(1,A.pn)*C;
+  const cx=$('fCon').value||'All contracts';
+  $('kpis').innerHTML=`<div class="hero">
+   <div class="hero-main">
+    <div class="hero-h"><h2>Supply pipeline</h2><span>${cx} &middot; ${list.length} items &middot; ${cr(A.sv)} of supply</span></div>
+    <div class="flow" role="img" aria-label="Supply split: issued to stations, in store, awaiting from contractors">${seg('iss',iss,'Issued to stations')}${seg('sto',store,'In store at WL/BZA')}${seg('pen',pend,'Awaiting from contractors')}</div>
+    <div class="legs">${leg('iss',iss,'Issued to stations')}${leg('sto',store,'In store at WL/BZA')}${leg('pen',pend,'Awaiting from contractors')}</div>
+    <div class="hero-note"><b>${pct(A.pr)}</b> of supply value received &middot; <b>${pct(A.pi)}</b> issued to stations</div>
+   </div>
+   <div class="hero-side">
+    <div class="ring"><svg viewBox="0 0 80 80" aria-hidden="true"><circle cx="40" cy="40" r="34" class="r0"/><circle cx="40" cy="40" r="34" class="r1" stroke-dasharray="${dash.toFixed(1)} ${C.toFixed(1)}" transform="rotate(-90 40 40)"/></svg><div class="rv">${pct(A.pn)}</div></div>
+    <div class="rt"><b>Installation done</b><span>of ${cr(A.iv)} work</span>
+     ${chk?`<button class="alert bad" onclick="show('add')">${chk} ${chk===1?'entry':'entries'} to check</button>`:`<span class="alert ok">All entries OK</span>`}</div>
+   </div>
+  </div>`;
+}
 function chart(id,cfg){ if(charts[id]) charts[id].destroy(); cfg.options.animation=false; charts[id]=new Chart($(id),cfg) }
-function pickCon(c){ $('fCon').value=c; S.page=0; render(); window.scrollTo({top:$('tIt').offsetTop-80,behavior:'smooth'}) }
+function pickCon(c){ $('fCon').value=c; S.page=0; render(); show('items') }
 
 const bar = (v,c)=>`<div class="pb" style="--c:${c}"><i style="width:${Math.min(100,v*100)}%"></i><span>${pct(v)}</span></div>`;
 function renderStations(){
@@ -355,7 +561,7 @@ async function eStations(){
     const r=await sheet('Station Issue','A4:O4552',`select G,H,I,K where A = '${ref}'`);
     if(seq!==_eSeq)return;
     window._eSt=r;
-    $('eSt').innerHTML=r.map(x=>`<option>${x['Station / Location']||Object.values(x)[0]}</option>`).join('')||'<option value="">no station allotted</option>';
+    $('eSt').innerHTML=r.map(x=>`<option>${Object.values(x)[0]}</option>`).join('')||'<option value="">no station allotted</option>';
     eInfoUpd();
   }catch(e){$('eSt').innerHTML='<option value="">could not load</option>'}
 }
@@ -363,33 +569,142 @@ function eInfoUpd(){
   const n=$('eSt').value,r=(window._eSt||[]).find(x=>Object.values(x)[0]===n); if(!r)return;
   const v=Object.values(r); $('eInfo').textContent=`${n}: allotted ${v[1]} | issued ${v[2]} | installed ${v[3]}`;
 }
+function entryUrl(){ return CFG.ENTRY_URL || localStorage.getItem('entryUrl') || '' }
+let _eDone=false;
 function eInit(){
+  if(_eDone||!S.items.length) return; _eDone=true;
   const cons=[...new Set(S.items.map(i=>i.con))].filter(Boolean);
   $('eCon').innerHTML=cons.map(c=>`<option>${c}</option>`).join('');
   if(!$('eDate').value)$('eDate').value=new Date().toISOString().slice(0,10);
   $('ePin').value=localStorage.getItem('ePin')||'';
-  if(!CFG.ENTRY_URL)$('eNote').textContent='Form not connected yet: paste the Apps Script Web app URL into ENTRY_URL in the CFG block (see setup steps).';
+  if(!entryUrl()){$('eNote').style.display='block';$('eNote').textContent='Not connected yet: paste the Web app URL below to start saving entries.';$('eUrlBox').style.display='block'}
   eFillItems();
 }
-$('eTog').onclick=()=>{const b=$('eBox'),o=b.style.display==='none';b.style.display=o?'block':'none';$('eTog').textContent=o?'Hide form':'Show form'; if(o&&!$('eCon').options.length&&S.items.length)eInit()};
 $('eCon').onchange=eFillItems; $('eQ').oninput=eFillItems; $('eItem').onchange=eStations; $('eType').onchange=eStations; $('eSt').onchange=eInfoUpd;
+let _pend=null;
 $('eGo').onclick=()=>{
-  const res=$('eRes'); res.style.color='var(--ink)';
-  if(!CFG.ENTRY_URL){res.textContent='Not connected: ENTRY_URL is empty.';res.style.color='var(--r)';return}
+  const res=$('eRes'); res.style.color='var(--ink)'; res.textContent='';
+  if(!entryUrl()){res.textContent='Not connected: paste the Web app URL above first.';res.style.color='var(--r)';return}
   const type=$('eType').value,ref=$('eItem').value,st=type==='Received at WL/BZA'?'':$('eSt').value,qty=$('eQty').value;
   if(!$('eDate').value||!ref||!(+qty>0)||(type!=='Received at WL/BZA'&&!st)){res.textContent='Fill date, item, station (if not a receipt) and a quantity above 0.';res.style.color='var(--r)';return}
   localStorage.setItem('ePin',$('ePin').value);
-  if(!confirm(`Post to Google Sheet?\n${type}\n${ref}${st?' -> '+st:''}\nQty ${qty}`))return;
-  res.textContent='Posting...'; $('eGo').disabled=true;
-  const cb='eCb'+(++_jp),p=new URLSearchParams({callback:cb,pin:$('ePin').value,date:$('eDate').value,type,ref,station:st,qty,remarks:$('eRem').value});
-  const sc=document.createElement('script'),done=()=>{$('eGo').disabled=false;sc.remove();delete window[cb]};
-  const t=setTimeout(()=>{done();res.textContent='No reply from the Sheet script - check the Web app URL / deployment.';res.style.color='var(--r)'},30000);
-  window[cb]=o=>{clearTimeout(t);done();
-    if(o.ok){res.textContent='Posted in Data Entry row '+o.row+(o.check?' - check: '+o.check:' - OK');res.style.color=o.check?'#b26a00':'var(--g)';$('eQty').value='';$('eRem').value='';setTimeout(load,2500)}
-    else{res.textContent='NOT posted: '+o.error;res.style.color='var(--r)'}};
-  sc.onerror=()=>{clearTimeout(t);done();res.textContent='Could not reach the Web app URL.';res.style.color='var(--r)'};
-  sc.src=CFG.ENTRY_URL+(CFG.ENTRY_URL.includes('?')?'&':'?')+p; document.head.appendChild(sc);
+  _pend={type,ref,st,qty,date:$('eDate').value,rem:$('eRem').value,pin:$('ePin').value};
+  const lab=$('eItem').selectedOptions[0]?$('eItem').selectedOptions[0].textContent:ref;
+  $('cfmBody').innerHTML=`<dt>What</dt><dd>${type}</dd><dt>Item</dt><dd>${lab}</dd>${st?`<dt>Station</dt><dd>${st}</dd>`:''}<dt>Quantity</dt><dd><b>${qty}</b></dd><dt>Date</dt><dd>${_pend.date.split('-').reverse().join('-')}</dd>${_pend.rem?`<dt>Remarks</dt><dd>${_pend.rem.replace(/</g,'&lt;')}</dd>`:''}`;
+  const d=$('cfm'); d.returnValue=''; if(d.showModal) d.showModal(); else if(confirm('Save this entry to the Google Sheet?')) postEntry(_pend);
 };
+$('cfm').addEventListener('close',()=>{ if($('cfm').returnValue==='ok'&&_pend) postEntry(_pend) });
+function postEntry(d){
+  const res=$('eRes'); res.textContent='Saving...'; res.style.color='var(--ink)'; $('eGo').disabled=true;
+  const cb='eCb'+(++_jp),p=new URLSearchParams({callback:cb,pin:d.pin,date:d.date,type:d.type,ref:d.ref,station:d.st,qty:d.qty,remarks:d.rem});
+  const sc=document.createElement('script'),done=()=>{$('eGo').disabled=false;sc.remove();delete window[cb]};
+  const t=setTimeout(()=>{done();res.textContent='No reply from the Sheet script. Check the Web app URL and that access is set to Anyone.';res.style.color='var(--r)'},30000);
+  window[cb]=o=>{clearTimeout(t);done();
+    if(o.ok){res.textContent='';$('eQty').value='';$('eRem').value='';setTimeout(load,2500);
+      toast('Saved to Data Entry row '+o.row+(o.check?' - check: '+o.check:''),o.check?'warn':'ok')}
+    else{res.textContent='Not saved: '+o.error;res.style.color='var(--r)'}};
+  sc.onerror=()=>{clearTimeout(t);done();res.textContent='Could not reach the Web app URL.';res.style.color='var(--r)'};
+  const U=entryUrl(); sc.src=U+(U.includes('?')?'&':'?')+p; document.head.appendChild(sc);
+}
+
+$('eUrlSave').onclick=()=>{const v=$('eUrl').value.trim(); if(!/^https:\/\/script\.google\.com\/.+\/exec/.test(v)){$('eRes').textContent='That is not a Web app URL (it should start with https://script.google.com/ and end with /exec).';$('eRes').style.color='var(--r)';return}
+  localStorage.setItem('entryUrl',v);$('eNote').style.display='none';$('eUrlBox').style.display='none';$('eRes').textContent='Connected. You can save entries now.';$('eRes').style.color='var(--g)'};
+/* ---------- Reports ---------- */
+function pDate(raw,f){
+  let m=typeof raw==='string'&&/^Date\((\d+),(\d+),(\d+)/.exec(raw);
+  if(m) return new Date(+m[1],+m[2],+m[3]);
+  if(raw instanceof Date) return raw;
+  const t=Date.parse(f||''); if(!isNaN(t)){const d=new Date(t);return new Date(d.getFullYear(),d.getMonth(),d.getDate())}
+  return null;
+}
+const dstr=d=>d.toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'}).replace(/ /g,'-');
+const iso=d=>d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+const toDate=v=>{const m=/^(\d{4})-(\d{2})-(\d{2})$/.exec(v||'');return m?new Date(+m[1],+m[2]-1,+m[3]):null};
+let R={g:'work',open:null,rows:[],list:[]}, _repInit=false;
+function repInit(){
+  const cons=[...new Set(S.items.map(i=>i.con))].filter(Boolean), cur=$('rCon').value;
+  $('rCon').innerHTML='<option value="">All works</option>'+cons.map(c=>`<option>${c}</option>`).join(''); if(cons.includes(cur)) $('rCon').value=cur;
+  if(_repInit) return; _repInit=true;
+  document.querySelectorAll('#rGrp button').forEach(b=>b.onclick=()=>{R.g=b.dataset.g;R.open=null;document.querySelectorAll('#rGrp button').forEach(x=>x.classList.toggle('on',x===b));renderReport()});
+  ['rType','rCon'].forEach(id=>$(id).onchange=()=>{R.open=null;renderReport()});
+  $('rQ').oninput=()=>{R.open=null;renderReport()};
+  ['rFrom','rTo'].forEach(id=>$(id).onchange=()=>{document.querySelectorAll('#rPre button').forEach(x=>x.classList.remove('on'));R.open=null;renderReport()});
+  document.querySelectorAll('#rPre button').forEach(b=>b.onclick=()=>{
+    const t=new Date(), T=new Date(t.getFullYear(),t.getMonth(),t.getDate()), p=b.dataset.p; let a='',z='';
+    if(p==='m0'){a=iso(new Date(T.getFullYear(),T.getMonth(),1));z=iso(T)}
+    else if(p==='m1'){a=iso(new Date(T.getFullYear(),T.getMonth()-1,1));z=iso(new Date(T.getFullYear(),T.getMonth(),0))}
+    else if(p==='d30'){a=iso(new Date(T.getFullYear(),T.getMonth(),T.getDate()-29));z=iso(T)}
+    else if(p==='fy'){const y=T.getMonth()>=3?T.getFullYear():T.getFullYear()-1;a=iso(new Date(y,3,1));z=iso(T)}
+    $('rFrom').value=a;$('rTo').value=z;
+    document.querySelectorAll('#rPre button').forEach(x=>x.classList.toggle('on',x===b));R.open=null;renderReport()});
+}
+function repFilter(){
+  const ty=$('rType').value,cn=$('rCon').value,q=$('rQ').value.trim().toLowerCase().split(/\s+/).filter(Boolean),a=toDate($('rFrom').value),z=toDate($('rTo').value);
+  const rate={};S.items.forEach(i=>rate[i.ref]=i.rate);
+  return (S.log||[]).filter(e=>(!ty||e.type===ty)&&(!cn||e.con===cn)&&(!a||e.d>=a)&&(!z||e.d<=z)&&q.every(w=>(e.st+' '+e.item+' '+e.con).toLowerCase().includes(w)))
+    .map(e=>({...e,val:e.qty*(rate[e.ref]||0)}));
+}
+function renderReport(){
+  if(!$('tRep')) return;
+  const L=repFilter(); R.list=L;
+  const key=e=>R.g==='work'?e.con:R.g==='station'?(e.st||'(store receipt)'):e.con+'|'+(e.st||'(store receipt)');
+  const G={}; L.forEach(e=>{const k=key(e);(G[k]=G[k]||{k,n:0,val:0,items:new Set(),works:new Set(),con:e.con,st:e.st||'(store receipt)',rows:[]});const g=G[k];g.n++;g.val+=e.val;g.items.add(e.ref||e.item);g.works.add(e.con);g.rows.push(e)});
+  const rows=Object.values(G).sort((a,b)=>b.val-a.val||b.n-a.n); R.rows=rows;
+  const tv=L.reduce((a,e)=>a+e.val,0), items=new Set(L.map(e=>e.ref||e.item)).size, sts=new Set(L.filter(e=>e.st).map(e=>e.st)).size;
+  const a=$('rFrom').value,z=$('rTo').value, per=(a||z)?((a?dstr(toDate(a)):'start')+' to '+(z?dstr(toDate(z)):'today')):'all dates';
+  $('rSum').innerHTML=`<div class="rs"><b>${L.length}</b><span>entries &middot; ${per}</span></div><div class="rs"><b>${items}</b><span>different items</span></div><div class="rs"><b>${sts}</b><span>stations</span></div><div class="rs"><b>Rs ${fmt(tv/1e5,2)} L</b><span>value of material</span></div>`;
+  const mx=Math.max(...rows.map(r=>r.val),1), vb=v=>`<div class="pb" style="--c:${COL.b}"><i style="width:${Math.min(100,v/mx*100)}%"></i><span>${tv?fmt(v/tv*100,0)+'%':''}</span></div>`;
+  let head,body;
+  if(R.g==='work'){head='<th>Work</th><th class="n">Entries</th><th class="n">Items</th><th class="n">Stations</th><th class="n">Value Rs L</th><th>Share</th>';
+    body=rows.map(r=>`<td><b>${r.con}</b></td><td class="n">${r.n}</td><td class="n">${r.items.size}</td><td class="n">${new Set(r.rows.filter(x=>x.st).map(x=>x.st)).size}</td><td class="n">${fmt(r.val/1e5,2)}</td><td>${vb(r.val)}</td>`)}
+  else if(R.g==='station'){head='<th>Station</th><th class="n">Entries</th><th class="n">Items</th><th class="n">Works</th><th class="n">Value Rs L</th><th>Share</th>';
+    body=rows.map(r=>`<td><b>${r.st}</b></td><td class="n">${r.n}</td><td class="n">${r.items.size}</td><td class="n">${r.works.size}</td><td class="n">${fmt(r.val/1e5,2)}</td><td>${vb(r.val)}</td>`)}
+  else{head='<th>Work</th><th>Station</th><th class="n">Entries</th><th class="n">Items</th><th class="n">Value Rs L</th><th>Share</th>';
+    body=rows.map(r=>`<td><b>${r.con}</b></td><td>${r.st}</td><td class="n">${r.n}</td><td class="n">${r.items.size}</td><td class="n">${fmt(r.val/1e5,2)}</td><td>${vb(r.val)}</td>`)}
+  $('tRep').innerHTML=rows.length?`<tr>${head}</tr>`+body.map((b,i)=>`<tr class="click" data-i="${i}">${b}</tr>`).join(''):`<tr><td class="empty">No entries match these filters. Try <a href="#" id="rAll">All time</a> or a different entry type.</td></tr>`;
+  const al=$('rAll'); if(al) al.onclick=e=>{e.preventDefault();document.querySelector('#rPre [data-p=all]').click()};
+  $('tRep').querySelectorAll('tr[data-i]').forEach(tr=>tr.onclick=()=>{R.open=+tr.dataset.i;repDetail()});
+  if(R.open!=null&&R.rows[R.open]) repDetail(); else $('rDetail').style.display='none';
+}
+function repDetail(){
+  const g=R.rows[R.open], el=$('rDetail'); if(!g){el.style.display='none';return}
+  const ttl=R.g==='work'?g.con:R.g==='station'?g.st:g.con+' / '+g.st, L=[...g.rows].sort((a,b)=>b.d-a.d);
+  el.style.display='block';
+  el.innerHTML=`<div class="rdh"><h2 style="margin:0">${ttl} <small>${L.length} entries &middot; Rs ${fmt(g.val/1e5,2)} L</small></h2><div><button class="btn" id="rCsvG">Download this list</button> <button class="btn" onclick="$('rDetail').style.display='none';R.open=null">Close</button></div></div>
+   <div class="tw scroll"><table><tr><th>Date</th><th>Entry type</th><th>Work</th><th>Item</th><th>Station</th><th class="n">Qty</th><th class="n">Value Rs</th></tr>`+
+   L.map(e=>`<tr><td>${dstr(e.d)}</td><td>${e.type}</td><td>${e.con}</td><td>${e.item}</td><td>${e.st||'-'}</td><td class="n">${q2(e.qty)}</td><td class="n">${fmt(e.val,0)}</td></tr>`).join('')+`</table></div>`;
+  $('rCsvG').onclick=()=>csv(L,ttl);
+  el.scrollIntoView({block:'nearest',behavior:'smooth'});
+}
+function csv(L,name){
+  const q=v=>'"'+String(v==null?'':v).replace(/"/g,'""')+'"';
+  const rows=[['Date','Entry type','Work','Item','Station','Qty','Value Rs','Remarks']].concat(L.map(e=>[dstr(e.d),e.type,e.con,e.item,e.st,e.qty,Math.round(e.val),e.rem]));
+  const b=new Blob(['﻿'+rows.map(r=>r.map(q).join(',')).join('\r\n')],{type:'text/csv'}), a=document.createElement('a');
+  a.href=URL.createObjectURL(b); a.download='report_'+String(name||'all').replace(/[^\w]+/g,'_')+'_'+iso(new Date())+'.csv'; document.body.appendChild(a); a.click(); a.remove();
+}
+
+/* ---------- views ---------- */
+const VIEWS=['overview','stations','items','reports','add']; let _view='overview';
+function show(v){
+  if(!VIEWS.includes(v)) v='overview'; _view=v;
+  VIEWS.forEach(n=>{ $('v-'+n).classList.toggle('on',n===v); const a=document.querySelector('[data-nav="'+n+'"]'); a.classList.toggle('on',n===v); a.setAttribute('aria-current',n===v?'page':'false') });
+  $('filters').style.display=(v==='overview'||v==='items')?'flex':'none';
+  if(history.replaceState) history.replaceState(null,'','#'+v);
+  if(v==='overview') Object.values(charts).forEach(c=>c.resize());
+  if(v==='add') eInit();
+  if(v==='reports') renderReport();
+  window.scrollTo(0,0);
+}
+document.querySelectorAll('[data-nav]').forEach(a=>a.onclick=e=>{e.preventDefault();show(a.dataset.nav)});
+document.querySelectorAll('.seg button').forEach(b=>b.onclick=()=>{
+  $('eType').value=b.dataset.v; document.querySelectorAll('.seg button').forEach(x=>x.classList.toggle('on',x===b)); $('eType').dispatchEvent(new Event('change'))});
+function onLoaded(){ if(_view==='add') eInit(); repInit(); renderReport() }
+show((location.hash||'').slice(1));
+
+
+document.addEventListener('click',e=>{ if(e.target&&e.target.id==='rCsv') csv(R.list,'all') });
+/* ---------- toast ---------- */
+let _toastT; function toast(msg,kind){const t=$('toast');t.textContent=msg;t.className='show '+(kind||'');clearTimeout(_toastT);_toastT=setTimeout(()=>{t.className=''},5000)}
 </script>
 </body>
 </html>
